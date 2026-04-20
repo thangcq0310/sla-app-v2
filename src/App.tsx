@@ -44,12 +44,12 @@ const Badge = ({ text, color = 'gray' }: { text: string; color?: 'gray' | 'orang
   return <span className={`px-3 py-1 text-xs font-bold rounded-pill border ${colorClasses[color]}`}>{text}</span>;
 };
 const PrimaryButton = ({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button {...props} className={`px-6 py-3 bg-ink-black text-canvas-cream rounded-xl font-medium text-base tracking-tightest hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
+  <button {...props} className={`px-6 py-3 bg-ink-black text-canvas-cream rounded-[20px] font-[500] text-base tracking-[-0.02em] hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
     {children}
   </button>
 );
 const SecondaryButton = ({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button {...props} className={`px-6 py-3 bg-white border border-ink-black text-ink-black rounded-xl font-normal text-base tracking-tightest hover:bg-soft-bone transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
+  <button {...props} className={`px-6 py-3 bg-white border border-ink-black text-ink-black rounded-[20px] font-[450] text-base tracking-[-0.02em] hover:bg-soft-bone transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
     {children}
   </button>
 );
