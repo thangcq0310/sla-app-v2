@@ -26,42 +26,42 @@ const auth = getAuth(app);
 // --- REDESIGNED COMPONENTS (No changes) ---
 
 const Card = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <div className={`bg-lifted border border-[#D1CDC7] rounded-[40px] shadow-[0_24px_48px_0_rgba(0,0,0,0.08)] ${className}`}>{children}</div>
+  <div className={`bg-lifted-cream border border-dust-taupe rounded-3xl shadow-halo ${className}`}>{children}</div>
 );
 const Eyebrow = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <div className={`flex items-center gap-2 text-sm font-bold text-[#696969] uppercase tracking-widest ${className}`}>
-    <div className="w-1.5 h-1.5 rounded-[999px] bg-[#F37338]"></div>
+  <div className={`flex items-center gap-2 text-sm font-bold text-slate-gray uppercase tracking-widest ${className}`}>
+    <div className="w-1.5 h-1.5 rounded-pill bg-light-signal-orange"></div>
     {children}
   </div>
 );
 const Badge = ({ text, color = 'gray' }: { text: string; color?: 'gray' | 'orange' | 'red' | 'yellow' }) => {
   const colorClasses = {
-    gray: 'border-[#D1CDC7] text-[#696969]',
-    orange: 'border-[#CF4500] text-[#CF4500]',
-    red: 'border-[#EB001B] text-[#EB001B]',
-    yellow: 'border-[#F79E1B] text-[#F79E1B]',
+    gray: 'border-dust-taupe text-slate-gray',
+    orange: 'border-signal-orange text-signal-orange',
+    red: 'border-mastercard-red text-mastercard-red',
+    yellow: 'border-mastercard-yellow text-mastercard-yellow',
   };
-  return <span className={`px-3 py-1 text-xs font-bold rounded-[999px] border ${colorClasses[color]}`}>{text}</span>;
+  return <span className={`px-3 py-1 text-xs font-bold rounded-pill border ${colorClasses[color]}`}>{text}</span>;
 };
 const PrimaryButton = ({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button {...props} className={`px-6 py-3 bg-[#141413] text-[#F3F0EE] rounded-[20px] font-medium text-base tracking-[-0.32px] hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
+  <button {...props} className={`px-6 py-3 bg-ink-black text-canvas-cream rounded-xl font-medium text-base tracking-tightest hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
     {children}
   </button>
 );
 const SecondaryButton = ({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button {...props} className={`px-6 py-3 bg-white border border-[#141413] text-[#141413] rounded-[20px] font-normal text-base tracking-[-0.32px] hover:bg-[#F4F4F4] transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
+  <button {...props} className={`px-6 py-3 bg-white border border-ink-black text-ink-black rounded-xl font-normal text-base tracking-tightest hover:bg-soft-bone transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
     {children}
   </button>
 );
 const BrandLogo = ({isPill = false, isLight = false}) => (
-    <div className={`flex items-center ${isPill ? 'justify-center' : 'gap-3'} ${isLight ? 'text-white' : 'text-[#141413]'}`}>
-        <div className="w-10 h-10 rounded-lg flex flex-shrink-0 items-center justify-center text-white font-black italic shadow-sm" style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-accent-alt))' }}>
+    <div className={`flex items-center ${isPill ? 'justify-center' : 'gap-3'} ${isLight ? 'text-white' : 'text-ink-black'}`}>
+        <div className="w-10 h-10 rounded-lg flex flex-shrink-0 items-center justify-center text-white font-black italic shadow-sm bg-gradient-to-br from-light-signal-orange to-signal-orange">
             NF
         </div>
         {!isPill && (
             <div className="overflow-hidden">
                <div className="font-extrabold text-lg tracking-tight leading-tight">NAFOODS</div>
-               <div className={`text-xs font-bold uppercase tracking-widest mt-0.5 ${isLight ? 'text-gray-400' : 'text-[#696969]'}`}>LOGISTICS</div>
+               <div className={`text-xs font-bold uppercase tracking-widest mt-0.5 ${isLight ? 'text-gray-400' : 'text-slate-gray'}`}>LOGISTICS</div>
             </div>
         )}
     </div>
@@ -361,8 +361,8 @@ const handleLogin = async (e: React.FormEvent) => {
     const StatCard = ({ title, value, subtext }: {title:string, value:string, subtext:string}) => (
         <Card className="p-8">
             <Eyebrow>{title}</Eyebrow>
-            <div className="text-3xl font-medium my-3 tracking-tight">{value}</div>
-            <p className="text-[#696969] text-sm">{subtext}</p>
+            <div className="text-3xl font-medium my-3 tracking-tighter">{value}</div>
+            <p className="text-slate-gray text-sm">{subtext}</p>
         </Card>
     );
     return (
@@ -394,25 +394,25 @@ const handleLogin = async (e: React.FormEvent) => {
           <Card className="lg:col-span-2 p-8 flex flex-col h-[350px]">
             <Eyebrow>Vendor Classification</Eyebrow>
              <div className="flex-1 flex items-center justify-center">
-                <div className="w-40 h-40 rounded-[999px] border-[20px] border-[#CF4500] border-r-[#F37338] border-b-[#696969] relative">
+                <div className="w-40 h-40 rounded-pill border-[20px] border-signal-orange border-r-light-signal-orange border-b-slate-gray relative">
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
                     <div className="text-3xl font-medium leading-none">{vendors.length}</div>
-                    <div className="text-sm font-bold text-[#696969] uppercase tracking-widest">Vendors</div>
+                    <div className="text-sm font-bold text-slate-gray uppercase tracking-widest">Vendors</div>
                   </div>
                 </div>
             </div>
             <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                     <div className="font-medium text-lg">{vendors.length > 0 ? ((vendors.filter(v => v.score >= 90).length / vendors.length) * 100).toFixed(0) : 0}%</div>
-                    <div className="text-sm text-[#696969]">Grade A</div>
+                    <div className="text-sm text-slate-gray">Grade A</div>
                 </div>
                  <div>
                     <div className="font-medium text-lg">{vendors.length > 0 ? ((vendors.filter(v => v.score >= 80 && v.score < 90).length / vendors.length) * 100).toFixed(0) : 0}%</div>
-                    <div className="text-sm text-[#696969]">Grade B</div>
+                    <div className="text-sm text-slate-gray">Grade B</div>
                 </div>
                  <div>
                     <div className="font-medium text-lg">{vendors.length > 0 ? ((vendors.filter(v => v.score < 80).length / vendors.length) * 100).toFixed(0) : 0}%</div>
-                    <div className="text-sm text-[#696969]">Grade C</div>
+                    <div className="text-sm text-slate-gray">Grade C</div>
                 </div>
             </div>
           </Card>
@@ -431,32 +431,32 @@ const handleLogin = async (e: React.FormEvent) => {
     if (isEditingKpi && editingType === type) {
        return (
          <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
-           <button onClick={() => setIsEditingKpi(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-[#696969] hover:text-[#141413] transition-colors">
+           <button onClick={() => setIsEditingKpi(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
              <ChevronLeft size={16} /> Back to SLA Evaluation
            </button>
            <Card className="p-10">
              <h2 className="text-xl font-bold tracking-tight m-0">KPI Criteria Configuration ({type})</h2>
-             <p className="text-[#696969] mt-2 mb-8">Define the criteria and weights for SLA scoring. Total weight must equal 100%.</p>
+             <p className="text-slate-gray mt-2 mb-8">Define the criteria and weights for SLA scoring. Total weight must equal 100%.</p>
              <div className="space-y-4 mb-6">
                 {editingKpiData.map((item, index) => (
-                   <div key={item.id} className="flex flex-wrap gap-4 p-5 border border-[#D1CDC7] rounded-[20px] bg-[#F3F0EE] items-center">
+                   <div key={item.id} className="flex flex-wrap gap-4 p-5 border border-dust-taupe rounded-xl bg-canvas-cream items-center">
                       <div className="flex-1 min-w-[200px]">
-                         <label className="block text-xs font-bold text-[#696969] uppercase mb-1">Criteria Name</label>
+                         <label className="block text-xs font-bold text-slate-gray uppercase mb-1">Criteria Name</label>
                          <input type="text" value={item.label} onChange={(e) => {
                             const d = [...editingKpiData]; d[index].label = e.target.value; setEditingKpiData(d);
-                         }} className="w-full px-4 py-2 border border-[#D1CDC7] rounded-[999px] text-sm font-semibold" />
+                         }} className="w-full px-4 py-2 border border-dust-taupe rounded-pill text-sm font-semibold" />
                       </div>
                       <div className="w-24">
-                         <label className="block text-xs font-bold text-[#696969] uppercase mb-1">Weight (%)</label>
+                         <label className="block text-xs font-bold text-slate-gray uppercase mb-1">Weight (%)</label>
                          <input type="number" value={item.weight} onChange={(e) => {
                             const d = [...editingKpiData]; d[index].weight = Number(e.target.value); setEditingKpiData(d);
-                         }} className="w-full px-4 py-2 border border-[#D1CDC7] rounded-[999px] text-sm font-bold text-center" />
+                         }} className="w-full px-4 py-2 border border-dust-taupe rounded-pill text-sm font-bold text-center" />
                       </div>
                       <div className="w-24">
-                         <label className="block text-xs font-bold text-[#696969] uppercase mb-1">Target (%)</label>
+                         <label className="block text-xs font-bold text-slate-gray uppercase mb-1">Target (%)</label>
                          <input type="number" value={item.target} onChange={(e) => {
                            const d = [...editingKpiData]; d[index].target = Number(e.target.value); setEditingKpiData(d);
-                         }} className="w-full px-4 py-2 border border-[#D1CDC7] rounded-[999px] text-sm font-bold text-center" />
+                         }} className="w-full px-4 py-2 border border-dust-taupe rounded-pill text-sm font-bold text-center" />
                       </div>
                       <div className="flex items-center gap-4 pt-5">
                          <label className="flex items-center gap-2 cursor-pointer text-sm font-bold">
@@ -465,7 +465,7 @@ const handleLogin = async (e: React.FormEvent) => {
                             }} className="w-5 h-5 cursor-pointer rounded-md" />
                             Critical
                          </label>
-                         <button onClick={() => setEditingKpiData(editingKpiData.filter((_, i) => i !== index))} className="text-[#696969] hover:text-[#CF4500] transition-colors">
+                         <button onClick={() => setEditingKpiData(editingKpiData.filter((_, i) => i !== index))} className="text-slate-gray hover:text-signal-orange transition-colors">
                             <X size={16} />
                          </button>
                       </div>
@@ -475,7 +475,7 @@ const handleLogin = async (e: React.FormEvent) => {
              <SecondaryButton onClick={() => setEditingKpiData([...editingKpiData, { id: `new_${Date.now()}`, label: 'New Criteria', weight: 0, target: 100, critical: false }])} className="w-full !border-dashed">
                 + Add New Criteria
              </SecondaryButton>
-             <div className="flex justify-end gap-4 pt-8 mt-8 border-t border-[#D1CDC7]">
+             <div className="flex justify-end gap-4 pt-8 mt-8 border-t border-dust-taupe">
                 <SecondaryButton onClick={() => setIsEditingKpi(false)}>Cancel</SecondaryButton>
                 <PrimaryButton onClick={handleSaveConfig}>Save Configuration</PrimaryButton>
              </div>
@@ -489,24 +489,24 @@ const handleLogin = async (e: React.FormEvent) => {
             <div className="flex justify-between items-start">
                 <div>
                     <h3 className="text-xl font-bold tracking-tight">SLA Evaluation Form</h3>
-                    <p className="text-[#696969]">Score vendors based on the pre-defined KPI criteria for <span className="font-bold text-[#141413]">{type}</span> services.</p>
+                    <p className="text-slate-gray">Score vendors based on the pre-defined KPI criteria for <span className="font-bold text-ink-black">{type}</span> services.</p>
                 </div>
                 <SecondaryButton onClick={handleEditConfig} className="flex-shrink-0">Edit Criteria</SecondaryButton>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-[#D1CDC7]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-dust-taupe">
                 <div>
-                    <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Select Vendor</label>
-                    <select className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 text-base outline-none focus:border-[#141413] transition-colors bg-white appearance-none">
+                    <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Select Vendor</label>
+                    <select className="w-full border border-dust-taupe rounded-pill px-5 py-3 text-base outline-none focus:border-ink-black transition-colors bg-white appearance-none">
                         {vendors.filter(v => v.type === type).map(v => <option key={v.id}>{v.name}</option>)}
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Evaluation Period</label>
+                    <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Evaluation Period</label>
                      <input 
                        type="month" 
                        value={evaluationMonth}
                        onChange={(e) => setEvaluationMonth(e.target.value)}
-                       className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 text-base outline-none focus:border-[#141413] transition-colors bg-white"
+                       className="w-full border border-dust-taupe rounded-pill px-5 py-3 text-base outline-none focus:border-ink-black transition-colors bg-white"
                      />
                 </div>
             </div>
@@ -515,25 +515,25 @@ const handleLogin = async (e: React.FormEvent) => {
           <h3 className="text-xl font-bold tracking-tight mb-6">KPI Scoring</h3>
           <div className="space-y-4">
             {config.map((kpi) => (
-               <div key={kpi.id} className="flex flex-wrap justify-between items-center p-5 bg-[#F3F0EE] rounded-[20px]">
+               <div key={kpi.id} className="flex flex-wrap justify-between items-center p-5 bg-canvas-cream rounded-xl">
                    <div>
                       <div className="flex items-center gap-3">
                          <span className="text-base font-bold">{kpi.label}</span>
                          {kpi.critical && <Badge text="Critical" color="orange" />}
                       </div>
-                      <div className="text-sm text-[#696969] mt-1">Weight: {kpi.weight}% • Target: {kpi.target}%</div>
+                      <div className="text-sm text-slate-gray mt-1">Weight: {kpi.weight}% • Target: {kpi.target}%</div>
                    </div>
                    <div className="flex items-center gap-4 mt-4 sm:mt-0">
                        <div className="relative">
-                           <input type="number" defaultValue={100} className="w-28 px-4 py-2 border bg-white border-[#D1CDC7] rounded-[999px] text-center text-lg font-bold outline-none" />
-                           <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-[#696969]">%</span>
+                           <input type="number" defaultValue={100} className="w-28 px-4 py-2 border bg-white border-dust-taupe rounded-pill text-center text-lg font-bold outline-none" />
+                           <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-slate-gray">%</span>
                        </div>
                    </div>
                </div>
             ))}
           </div>
         </Card>
-        <div className="mt-8 pt-8 border-t border-[#D1CDC7] flex justify-end gap-4">
+        <div className="mt-8 pt-8 border-t border-dust-taupe flex justify-end gap-4">
              <SecondaryButton onClick={() => window.print()}>Print / Save as PDF</SecondaryButton>
              <PrimaryButton>Submit Score</PrimaryButton>
         </div>
@@ -546,7 +546,7 @@ const handleLogin = async (e: React.FormEvent) => {
     if (showVendorForm) {
       return (
          <div className="animate-in fade-in duration-500 max-w-3xl mx-auto">
-           <button onClick={() => setShowVendorForm(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-[#696969] hover:text-[#141413] transition-colors">
+           <button onClick={() => setShowVendorForm(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
              <ChevronLeft size={16} /> Back to Vendor List
            </button>
            <Card className="p-10">
@@ -554,40 +554,40 @@ const handleLogin = async (e: React.FormEvent) => {
              <form onSubmit={handleSaveVendor} className="space-y-6 mt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    <div>
-                     <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Vendor ID</label>
-                     <input required type="text" value={vendorFormData?.id || ''} disabled className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-[#F3F0EE]/50 outline-none opacity-60" />
+                     <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Vendor ID</label>
+                     <input required type="text" value={vendorFormData?.id || ''} disabled className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-canvas-cream/50 outline-none opacity-60" />
                    </div>
                    <div>
-                     <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Vendor Name</label>
-                     <input required type="text" value={vendorFormData?.name || ''} onChange={(e) => setVendorFormData({...vendorFormData, name: e.target.value})} className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413]" />
+                     <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Vendor Name</label>
+                     <input required type="text" value={vendorFormData?.name || ''} onChange={(e) => setVendorFormData({...vendorFormData, name: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black" />
                    </div>
                    <div>
-                     <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Service Type</label>
-                     <select value={vendorFormData?.type || 'Warehouse'} onChange={(e) => setVendorFormData({...vendorFormData, type: e.target.value})} className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413] appearance-none">
+                     <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Service Type</label>
+                     <select value={vendorFormData?.type || 'Warehouse'} onChange={(e) => setVendorFormData({...vendorFormData, type: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black appearance-none">
                         <option value="Warehouse">Warehouse</option>
                         <option value="Transport">Transport</option>
                      </select>
                    </div>
                    <div>
-                     <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Factory</label>
-                     <select value={vendorFormData?.factory || 'Long An'} onChange={(e) => setVendorFormData({...vendorFormData, factory: e.target.value})} className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413] appearance-none">
+                     <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Factory</label>
+                     <select value={vendorFormData?.factory || 'Long An'} onChange={(e) => setVendorFormData({...vendorFormData, factory: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black appearance-none">
                         {factories.map(f => <option key={f.id} value={f.name}>{f.name}</option>)}
                      </select>
                    </div>
                    <div>
-                     <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Contact Person</label>
-                     <input required type="text" value={vendorFormData?.contact || ''} onChange={(e) => setVendorFormData({...vendorFormData, contact: e.target.value})} className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413]" />
+                     <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Contact Person</label>
+                     <input required type="text" value={vendorFormData?.contact || ''} onChange={(e) => setVendorFormData({...vendorFormData, contact: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black" />
                    </div>
                    <div>
-                     <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Phone</label>
-                     <input required type="text" value={vendorFormData?.phone || ''} onChange={(e) => setVendorFormData({...vendorFormData, phone: e.target.value})} className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413]" />
+                     <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Phone</label>
+                     <input required type="text" value={vendorFormData?.phone || ''} onChange={(e) => setVendorFormData({...vendorFormData, phone: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black" />
                    </div>
                    <div className="md:col-span-2">
-                     <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Email</label>
-                     <input required type="email" value={vendorFormData?.email || ''} onChange={(e) => setVendorFormData({...vendorFormData, email: e.target.value})} className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413]" />
+                     <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Email</label>
+                     <input required type="email" value={vendorFormData?.email || ''} onChange={(e) => setVendorFormData({...vendorFormData, email: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black" />
                    </div>
                 </div>
-                <div className="flex justify-end gap-4 pt-6 border-t border-[#D1CDC7] mt-6">
+                <div className="flex justify-end gap-4 pt-6 border-t border-dust-taupe mt-6">
                    <SecondaryButton type="button" onClick={() => setShowVendorForm(false)}>Cancel</SecondaryButton>
                    <PrimaryButton type="submit">Save Vendor</PrimaryButton>
                 </div>
@@ -599,7 +599,7 @@ const handleLogin = async (e: React.FormEvent) => {
     if (selectedVendor) {
       return (
         <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
-          <button onClick={() => setSelectedVendor(null)} className="mb-8 flex items-center gap-2 text-sm font-bold text-[#696969] hover:text-[#141413] transition-colors">
+          <button onClick={() => setSelectedVendor(null)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
              <ChevronLeft size={16} /> Back to List
           </button>
           <Card className="p-10">
@@ -613,13 +613,13 @@ const handleLogin = async (e: React.FormEvent) => {
                </div>
                <SecondaryButton onClick={() => handleEditVendor(selectedVendor)}>Edit</SecondaryButton>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 pt-8 border-t border-[#D1CDC7]">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 pt-8 border-t border-dust-taupe">
                 <div><Eyebrow>Service Type</Eyebrow><div className="text-lg font-semibold mt-1">{selectedVendor.type}</div></div>
                 <div><Eyebrow>Factory</Eyebrow><div className="text-lg font-semibold mt-1">{selectedVendor.factory}</div></div>
                 <div><Eyebrow>Current Score</Eyebrow><div className="text-2xl font-bold mt-1">{selectedVendor.score.toFixed(1)}%</div></div>
                 <div><Eyebrow>Contact Person</Eyebrow><div className="text-lg font-semibold mt-1">{selectedVendor.contact}</div></div>
                 <div><Eyebrow>Phone</Eyebrow><div className="text-lg font-semibold mt-1">{selectedVendor.phone}</div></div>
-                <div><Eyebrow>Email</Eyebrow><div className="text-lg font-semibold text-[#F37338] hover:underline cursor-pointer mt-1">{selectedVendor.email}</div></div>
+                <div><Eyebrow>Email</Eyebrow><div className="text-lg font-semibold text-light-signal-orange hover:underline cursor-pointer mt-1">{selectedVendor.email}</div></div>
             </div>
           </Card>
         </div>
@@ -633,17 +633,17 @@ return (
       <div className="space-y-6 animate-in fade-in duration-500">
           <div className="flex flex-col sm:flex-row gap-4 mb-2">
              <div className="relative flex-1">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#696969]" />
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-gray" />
                 <input 
                   type="text" 
                   placeholder="Search vendors by name or ID..." 
-                  className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-[999px] text-base font-medium outline-none focus:border-[#D1CDC7] shadow-sm transition-colors"
+                  className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-pill text-base font-medium outline-none focus:border-dust-taupe shadow-sm transition-colors"
                   value={vendorSearch}
                   onChange={(e) => setVendorSearch(e.target.value)}
                 />
              </div>
              <select 
-               className="px-6 py-4 bg-white border-2 border-transparent rounded-[999px] text-base font-bold text-[#141413] outline-none cursor-pointer shadow-sm appearance-none"
+               className="px-6 py-4 bg-white border-2 border-transparent rounded-pill text-base font-bold text-ink-black outline-none cursor-pointer shadow-sm appearance-none"
                value={vendorFilterType}
                onChange={(e) => setVendorFilterType(e.target.value)}
              >
@@ -656,19 +656,19 @@ return (
              <table className="w-full text-left">
                <thead className="bg-white">
                  <tr>
-                   <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Vendor</th>
-                   <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Service</th>
-                   <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Factory</th>
-                   <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Score</th>
-                   <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Grade</th>
+                   <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Vendor</th>
+                   <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Service</th>
+                   <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Factory</th>
+                   <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Score</th>
+                   <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Grade</th>
                  </tr>
                </thead>
                <tbody>
                  {filteredVendors.map((item) => (
-                   <tr key={item.id} className="hover:bg-[#F3F0EE] cursor-pointer transition-colors group border-t border-[#D1CDC7]" onClick={() => setSelectedVendor(item)}>
+                   <tr key={item.id} className="hover:bg-canvas-cream cursor-pointer transition-colors group border-t border-dust-taupe" onClick={() => setSelectedVendor(item)}>
                      <td className="py-5 px-6">
-                       <div className="font-medium text-base text-[#141413] group-hover:text-[#F37338] transition-colors">{item.name}</div>
-                       <div className="text-sm text-[#696969] font-mono">{item.id}</div>
+                       <div className="font-medium text-base text-ink-black group-hover:text-light-signal-orange transition-colors">{item.name}</div>
+                       <div className="text-sm text-slate-gray font-mono">{item.id}</div>
                      </td>
                      <td className="py-5 px-6 text-base font-medium">{item.type}</td>
                      <td className="py-5 px-6 text-base font-medium">{item.factory}</td>
@@ -680,9 +680,9 @@ return (
              </table>
              {filteredVendors.length === 0 && (
                <div className="p-20 text-center">
-                  <FileText className="w-12 h-12 text-[#D1CDC7] mx-auto mb-4" />
-                  <p className="text-[#141413] font-bold text-lg">No vendors found.</p>
-                  <p className="text-[#696969] text-base mt-2">Try adjusting your search or filters.</p>
+                  <FileText className="w-12 h-12 text-dust-taupe mx-auto mb-4" />
+                  <p className="text-ink-black font-bold text-lg">No vendors found.</p>
+                  <p className="text-slate-gray text-base mt-2">Try adjusting your search or filters.</p>
                </div>
              )}
           </Card>
@@ -694,7 +694,7 @@ return (
     if (showFactoryForm) {
       return (
         <div className="animate-in fade-in duration-500 max-w-3xl mx-auto">
-          <button onClick={() => setShowFactoryForm(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-[#696969] hover:text-[#141413] transition-colors">
+          <button onClick={() => setShowFactoryForm(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
             <ChevronLeft size={16} /> Back to Factory List
           </button>
           <Card className="p-10">
@@ -702,16 +702,16 @@ return (
             <form onSubmit={handleSaveFactory} className="space-y-6 mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Factory ID</label>
-                  <input required type="text" value={factoryFormData?.id || ''} disabled className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-[#F3F0EE]/50 outline-none opacity-60" />
+                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Factory ID</label>
+                  <input required type="text" value={factoryFormData?.id || ''} disabled className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-canvas-cream/50 outline-none opacity-60" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Factory Name</label>
-                  <input required type="text" value={factoryFormData?.name || ''} onChange={(e) => setFactoryFormData({...factoryFormData, name: e.target.value})} className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413]" />
+                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Factory Name</label>
+                  <input required type="text" value={factoryFormData?.name || ''} onChange={(e) => setFactoryFormData({...factoryFormData, name: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Region</label>
-                  <select value={factoryFormData?.region || 'Long An'} onChange={(e) => setFactoryFormData({...factoryFormData, region: e.target.value})} className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413] appearance-none">
+                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Region</label>
+                  <select value={factoryFormData?.region || 'Long An'} onChange={(e) => setFactoryFormData({...factoryFormData, region: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black appearance-none">
                     <option value="Long An">Long An</option>
                     <option value="Ho Chi Minh">Ho Chi Minh</option>
                     <option value="Binh Duong">Binh Duong</option>
@@ -720,18 +720,18 @@ return (
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Status</label>
-                  <select value={factoryFormData?.status || 'Active'} onChange={(e) => setFactoryFormData({...factoryFormData, status: e.target.value})} className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413] appearance-none">
+                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Status</label>
+                  <select value={factoryFormData?.status || 'Active'} onChange={(e) => setFactoryFormData({...factoryFormData, status: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black appearance-none">
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Address</label>
-                  <textarea required value={factoryFormData?.address || ''} onChange={(e) => setFactoryFormData({...factoryFormData, address: e.target.value})} className="w-full border border-[#D1CDC7] rounded-2xl px-5 py-3 bg-white outline-none focus:border-[#141413]" rows={2} />
+                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Address</label>
+                  <textarea required value={factoryFormData?.address || ''} onChange={(e) => setFactoryFormData({...factoryFormData, address: e.target.value})} className="w-full border border-dust-taupe rounded-2xl px-5 py-3 bg-white outline-none focus:border-ink-black" rows={2} />
                 </div>
               </div>
-              <div className="flex justify-end gap-4 pt-6 border-t border-[#D1CDC7] mt-6">
+              <div className="flex justify-end gap-4 pt-6 border-t border-dust-taupe mt-6">
                 <SecondaryButton type="button" onClick={() => setShowFactoryForm(false)}>Cancel</SecondaryButton>
                 <PrimaryButton type="submit">Save Factory</PrimaryButton>
               </div>
@@ -743,7 +743,7 @@ return (
     if (selectedFactory) {
       return (
         <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
-          <button onClick={() => setSelectedFactory(null)} className="mb-8 flex items-center gap-2 text-sm font-bold text-[#696969] hover:text-[#141413] transition-colors">
+          <button onClick={() => setSelectedFactory(null)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
             <ChevronLeft size={16} /> Back to List
           </button>
           <Card className="p-10">
@@ -757,7 +757,7 @@ return (
               </div>
               <SecondaryButton onClick={() => handleEditFactory(selectedFactory)}>Edit</SecondaryButton>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 pt-8 border-t border-[#D1CDC7]">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 pt-8 border-t border-dust-taupe">
               <div><Eyebrow>Region</Eyebrow><div className="text-lg font-semibold mt-1">{selectedFactory.region}</div></div>
               <div className="md:col-span-2"><Eyebrow>Address</Eyebrow><div className="text-lg font-semibold mt-1">{selectedFactory.address}</div></div>
             </div>
@@ -773,11 +773,11 @@ return (
     return (
       <div className="space-y-6 animate-in fade-in duration-500">
         <div className="relative flex-1">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#696969]" />
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-gray" />
           <input 
             type="text" 
             placeholder="Search factories by name, ID, or region..." 
-            className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-[999px] text-base font-semibold outline-none focus:border-[#D1CDC7] shadow-sm transition-colors"
+            className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-pill text-base font-semibold outline-none focus:border-dust-taupe shadow-sm transition-colors"
             value={factorySearch}
             onChange={(e) => setFactorySearch(e.target.value)}
           />
@@ -786,21 +786,21 @@ return (
           <table className="w-full text-left">
             <thead className="bg-white">
               <tr>
-                <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Factory</th>
-                <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Region</th>
-                <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Address</th>
-                <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Status</th>
+                <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Factory</th>
+                <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Region</th>
+                <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Address</th>
+                <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Status</th>
               </tr>
             </thead>
             <tbody>
               {filteredFactories.map((item) => (
-                <tr key={item.id} className="hover:bg-[#F3F0EE] cursor-pointer transition-colors group border-t border-[#D1CDC7]" onClick={() => setSelectedFactory(item)}>
+                <tr key={item.id} className="hover:bg-canvas-cream cursor-pointer transition-colors group border-t border-dust-taupe" onClick={() => setSelectedFactory(item)}>
                   <td className="py-5 px-6">
-                    <div className="font-bold text-base text-[#141413] group-hover:text-[#F37338] transition-colors">{item.name}</div>
-                    <div className="text-sm text-[#696969] font-mono">{item.id}</div>
+                    <div className="font-bold text-base text-ink-black group-hover:text-light-signal-orange transition-colors">{item.name}</div>
+                    <div className="text-sm text-slate-gray font-mono">{item.id}</div>
                   </td>
                   <td className="py-5 px-6 text-base font-semibold">{item.region}</td>
-                  <td className="py-5 px-6 text-base text-[#696969] max-w-xs truncate">{item.address}</td>
+                  <td className="py-5 px-6 text-base text-slate-gray max-w-xs truncate">{item.address}</td>
                   <td className="py-5 px-6"><Badge text={item.status} color={item.status === 'Active' ? 'gray' : 'orange'} /></td>
                 </tr>
               ))}
@@ -809,8 +809,8 @@ return (
           {filteredFactories.length === 0 && (
             <div className="p-20 text-center">
               <FileText className="w-12 h-12 text-line mx-auto mb-4" />
-              <p className="text-[#141413] font-bold text-lg">No factories found.</p>
-              <p className="text-[#696969] text-base mt-2">Try adjusting your search or add a new factory.</p>
+              <p className="text-ink-black font-bold text-lg">No factories found.</p>
+              <p className="text-slate-gray text-base mt-2">Try adjusting your search or add a new factory.</p>
             </div>
           )}
         </Card>
@@ -824,7 +824,7 @@ return (
     if (showCapaForm) {
       return (
         <div className="animate-in fade-in duration-500 max-w-3xl mx-auto">
-          <button onClick={() => setShowCapaForm(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-[#696969] hover:text-[#141413] transition-colors">
+          <button onClick={() => setShowCapaForm(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
             <ChevronLeft size={16} /> Back to CAPA List
           </button>
           <Card className="p-10">
@@ -832,63 +832,63 @@ return (
             <form onSubmit={handleSaveCapa} className="space-y-6 mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Vendor</label>
+                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Vendor</label>
                   <select
                     required
                     value={capaFormData?.vendor || ''}
                     onChange={(e) => setCapaFormData({ ...capaFormData, vendor: e.target.value })}
-                    className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413] appearance-none"
+                    className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black appearance-none"
                   >
                     {vendors.map(v => <option key={v.id} value={v.name}>{v.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Date</label>
+                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Date</label>
                   <input
                     required
                     type="date"
                     value={capaFormData?.date || ''}
                     onChange={(e) => setCapaFormData({ ...capaFormData, date: e.target.value })}
-                    className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413]"
+                    className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Issue</label>
+                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Issue</label>
                   <textarea
                     required
                     value={capaFormData?.issue || ''}
                     onChange={(e) => setCapaFormData({ ...capaFormData, issue: e.target.value })}
-                    className="w-full border border-[#D1CDC7] rounded-2xl px-5 py-3 bg-white outline-none focus:border-[#141413]"
+                    className="w-full border border-dust-taupe rounded-2xl px-5 py-3 bg-white outline-none focus:border-ink-black"
                     rows={3}
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Root Cause</label>
+                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Root Cause</label>
                   <textarea
                     required
                     value={capaFormData?.rootCause || ''}
                     onChange={(e) => setCapaFormData({ ...capaFormData, rootCause: e.target.value })}
-                    className="w-full border border-[#D1CDC7] rounded-2xl px-5 py-3 bg-white outline-none focus:border-[#141413]"
+                    className="w-full border border-dust-taupe rounded-2xl px-5 py-3 bg-white outline-none focus:border-ink-black"
                     rows={3}
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Action Plan</label>
+                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Action Plan</label>
                   <textarea
                     required
                     value={capaFormData?.actionPlan || ''}
                     onChange={(e) => setCapaFormData({ ...capaFormData, actionPlan: e.target.value })}
-                    className="w-full border border-[#D1CDC7] rounded-2xl px-5 py-3 bg-white outline-none focus:border-[#141413]"
+                    className="w-full border border-dust-taupe rounded-2xl px-5 py-3 bg-white outline-none focus:border-ink-black"
                     rows={3}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Priority</label>
+                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Priority</label>
                   <select
                     required
                     value={capaFormData?.priority || 'Medium'}
                     onChange={(e) => setCapaFormData({ ...capaFormData, priority: e.target.value })}
-                    className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413] appearance-none"
+                    className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black appearance-none"
                   >
                     <option>Low</option>
                     <option>Medium</option>
@@ -896,12 +896,12 @@ return (
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[#696969] uppercase mb-2 ml-4">Status</label>
+                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Status</label>
                   <select
                     required
                     value={capaFormData?.status || 'Open'}
                     onChange={(e) => setCapaFormData({ ...capaFormData, status: e.target.value })}
-                    className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413] appearance-none"
+                    className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black appearance-none"
                   >
                     <option>Open</option>
                     <option>In Progress</option>
@@ -910,7 +910,7 @@ return (
                   </select>
                 </div>
               </div>
-              <div className="flex justify-end gap-4 pt-6 border-t border-[#D1CDC7] mt-6">
+              <div className="flex justify-end gap-4 pt-6 border-t border-dust-taupe mt-6">
                 <SecondaryButton type="button" onClick={() => setShowCapaForm(false)}>Cancel</SecondaryButton>
                 <PrimaryButton type="submit">Save CAPA</PrimaryButton>
               </div>
@@ -925,11 +925,11 @@ return (
     return (
       <div className="space-y-6 animate-in fade-in duration-500">
          <div className="relative flex-1">
-           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#696969]" />
+           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-gray" />
            <input 
              type="text" 
              placeholder="Search CAPAs by ID, issue, or vendor..." 
-             className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-[999px] text-base font-semibold outline-none focus:border-[#D1CDC7] shadow-sm transition-colors"
+             className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-pill text-base font-semibold outline-none focus:border-dust-taupe shadow-sm transition-colors"
              value={capaSearch}
              onChange={(e) => setCapaSearch(e.target.value)}
            />
@@ -938,21 +938,21 @@ return (
             <table className="w-full text-left">
               <thead>
                 <tr>
-                  <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">CAPA ID</th>
-                  <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Date</th>
-                  <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Vendor</th>
-                  <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Issue</th>
-                  <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Priority</th>
-                  <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Status</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">CAPA ID</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Date</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Vendor</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Issue</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Priority</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {sortedCapas.map((item) => (
-                  <tr key={item.id} className={`border-t border-[#D1CDC7] transition-colors ${user?.role === 'admin' ? 'hover:bg-[#F3F0EE] cursor-pointer group' : ''}`} onClick={() => { if(user?.role === 'admin') handleEditCapa(item) }}>
+                  <tr key={item.id} className={`border-t border-dust-taupe transition-colors ${user?.role === 'admin' ? 'hover:bg-canvas-cream cursor-pointer group' : ''}`} onClick={() => { if(user?.role === 'admin') handleEditCapa(item) }}>
                     <td className="py-5 px-6 font-mono text-sm">{item.id}</td>
-                    <td className="py-5 px-6 text-[#696969] text-sm">{item.date}</td>
+                    <td className="py-5 px-6 text-slate-gray text-sm">{item.date}</td>
                     <td className="py-5 px-6 font-semibold" title={item.vendor}>{item.vendor}</td>
-                    <td className="py-5 px-6 text-[#141413] max-w-xs truncate" title={item.issue}>{item.issue}</td>
+                    <td className="py-5 px-6 text-ink-black max-w-xs truncate" title={item.issue}>{item.issue}</td>
                     <td className="py-5 px-6"><Badge text={item.priority} color={PRIORITY_COLOR[item.priority]}/></td>
                     <td className="py-5 px-6"><Badge text={item.status} color={STATUS_COLOR[item.status]} /></td>
                   </tr>
@@ -962,8 +962,8 @@ return (
             {sortedCapas.length === 0 && (
               <div className="p-20 text-center">
                  <FileText className="w-12 h-12 text-line mx-auto mb-4" />
-                 <p className="text-[#141413] font-bold text-lg">No CAPAs found.</p>
-                 <p className="text-[#696969] text-base mt-2">No corrective actions match your current search.</p>
+                 <p className="text-ink-black font-bold text-lg">No CAPAs found.</p>
+                 <p className="text-slate-gray text-base mt-2">No corrective actions match your current search.</p>
               </div>
             )}
          </Card>
@@ -973,10 +973,10 @@ return (
 
   if (isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-[#F3F0EE]">
+      <div className="flex h-screen w-full items-center justify-center bg-canvas-cream">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-[999px] animate-spin mx-auto mb-4"></div>
-          <p className="text-[#696969] font-bold">Loading...</p>
+          <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-pill animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-gray font-bold">Loading...</p>
         </div>
       </div>
     );
@@ -988,10 +988,10 @@ return (
         <div className="text-center mb-8">
           <BrandLogo />
         </div>
-        <h2 className="text-xl font-medium text-center tracking-tight text-[#141413]">
+        <h2 className="text-xl font-medium text-center tracking-tight text-ink-black">
           {authMode === 'login' ? 'Welcome Back' : 'Create Account'}
         </h2>
-        <p className="text-[#696969] text-center mt-2 mb-6">
+        <p className="text-slate-gray text-center mt-2 mb-6">
           {authMode === 'login' ? 'Sign in to continue' : 'Register to access the system'}
         </p>
         <form onSubmit={authMode === 'login' ? handleLogin : handleRegister} className="space-y-4">
@@ -1002,7 +1002,7 @@ return (
               required
               value={authFormData.email}
               onChange={(e) => setAuthFormData({...authFormData, email: e.target.value})}
-              className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413] transition-colors"
+              className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black transition-colors"
             />
           </div>
           <div>
@@ -1012,7 +1012,7 @@ return (
               required
               value={authFormData.password}
               onChange={(e) => setAuthFormData({...authFormData, password: e.target.value})}
-              className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413] transition-colors"
+              className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black transition-colors"
             />
           </div>
           {authMode === 'register' && (
@@ -1023,11 +1023,11 @@ return (
                 required
                 value={authFormData.confirmPassword}
                 onChange={(e) => setAuthFormData({...authFormData, confirmPassword: e.target.value})}
-                className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413] transition-colors"
+                className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black transition-colors"
               />
             </div>
           )}
-          {authError && <p className="text-[#CF4500] text-sm text-center">{authError}</p>}
+          {authError && <p className="text-signal-orange text-sm text-center">{authError}</p>}
           <PrimaryButton type="submit" className="w-full">
             {authMode === 'login' ? 'Sign In' : 'Sign Up'}
           </PrimaryButton>
@@ -1035,7 +1035,7 @@ return (
         <div className="mt-6 text-center">
           <button
             onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
-            className="text-sm font-bold text-[#696969] hover:text-[#F37338]"
+            className="text-sm font-bold text-slate-gray hover:text-light-signal-orange"
           >
             {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
           </button>
@@ -1049,11 +1049,11 @@ return (
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#F3F0EE] text-[#141413] font-sans print:h-auto print:overflow-visible print:bg-white">
-      <aside className={`bg-[#141413] text-white p-6 flex flex-col h-full flex-shrink-0 print:hidden transition-all duration-300 ease-in-out relative ${isSidebarCollapsed ? 'w-[104px] items-center' : 'w-[280px]'}`}>
+    <div className="flex h-screen w-full overflow-hidden bg-canvas-cream text-ink-black font-sans print:h-auto print:overflow-visible print:bg-white">
+      <aside className={`bg-ink-black text-white p-6 flex flex-col h-full flex-shrink-0 print:hidden transition-all duration-300 ease-in-out relative ${isSidebarCollapsed ? 'w-[104px] items-center' : 'w-[280px]'}`}>
         <button 
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
-          className="absolute -right-4 top-10 w-8 h-8 bg-white border border-[#D1CDC7] rounded-[999px] flex items-center justify-center text-[#696969] hover:text-[#141413] shadow-md cursor-pointer transition-all z-10"
+          className="absolute -right-4 top-10 w-8 h-8 bg-white border border-dust-taupe rounded-pill flex items-center justify-center text-slate-gray hover:text-ink-black shadow-md cursor-pointer transition-all z-10"
         >
           {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
@@ -1070,7 +1070,7 @@ return (
                   key={item.tab}
                   onClick={() => setActiveTab(item.tab)} 
                   title={isSidebarCollapsed ? item.label : ""}
-                  className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-[999px] text-sm font-medium tracking-[-0.16px] transition-all ${activeTab === item.tab ? 'bg-[#F3F0EE] text-[#141413]' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
+                  className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-pill text-sm font-medium tracking-tightest transition-all ${activeTab === item.tab ? 'bg-canvas-cream text-ink-black' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
                     <item.icon size={20} /> 
                     {!isSidebarCollapsed && <span>{item.label}</span>}
                 </button>
@@ -1083,7 +1083,7 @@ return (
                   key={item.tab} 
                   onClick={() => setActiveTab(item.tab)} 
                   title={isSidebarCollapsed ? item.label : ""}
-                  className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-[999px] text-sm font-medium tracking-[-0.16px] transition-all ${activeTab === item.tab ? 'bg-[#F3F0EE] text-[#141413]' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
+                  className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-pill text-sm font-medium tracking-tightest transition-all ${activeTab === item.tab ? 'bg-canvas-cream text-ink-black' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
                     <item.icon size={20} /> 
                     {!isSidebarCollapsed && <span>{item.label}</span>}
                 </button>
@@ -1094,7 +1094,7 @@ return (
         
         <div className="mt-auto pt-4 border-t border-white/10">
           <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : 'px-4'} mb-2`}>
-            <div className="w-10 h-10 rounded-[999px] bg-[#F37338] flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-10 h-10 rounded-pill bg-light-signal-orange flex items-center justify-center text-white font-bold text-sm">
               {user.email?.[0].toUpperCase()}
             </div>
             {!isSidebarCollapsed && (
@@ -1106,7 +1106,7 @@ return (
           </div>
           <button 
             onClick={handleLogout}
-            className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-12' : 'px-4 h-10'} rounded-[999px] text-sm font-medium tracking-[-0.16px] text-gray-400 hover:bg-white/10 hover:text-white transition-colors`}
+            className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-12' : 'px-4 h-10'} rounded-pill text-sm font-medium tracking-tightest text-gray-400 hover:bg-white/10 hover:text-white transition-colors`}
           >
             <LogOut size={20} />
             {!isSidebarCollapsed && <span>Logout</span>}
@@ -1147,9 +1147,9 @@ return (
                 <div className="text-center p-8 animate-in fade-in duration-500">
                   <Card className="max-w-lg mx-auto p-10">
                     <Users className="w-12 h-12 text-line mx-auto mb-4" />
-                    <h2 className="text-xl font-bold">Chào mừng bạn!</h2>
-                    <p className="text-[#696969] mt-2">Tài khoản của bạn đã được tạo thành công. Tuy nhiên, hồ sơ nhà cung cấp của bạn chưa được thiết lập.</p>
-                    <p className="text-[#696969] mt-2">Vui lòng liên hệ với quản trị viên để hoàn tất việc cài đặt và gán bạn vào một nhà cung cấp cụ thể.</p>
+                    <h2 className="text-xl font-bold">Welcome!</h2>
+                    <p className="text-slate-gray mt-2">Your account has been created, but your vendor profile is not yet set up.</p>
+                    <p className="text-slate-gray mt-2">Please contact an administrator to finalize your account and assign you to a specific vendor.</p>
                   </Card>
                 </div>
               );
@@ -1167,8 +1167,8 @@ return (
                             <Eyebrow>{v.id}</Eyebrow>
                        </div>
                        <div className="text-right">
-                           <div className="text-sm text-[#696969]">Current Score</div>
-                           <div className="text-3xl font-bold text-[#CF4500]">{v.score.toFixed(1)}%</div>
+                           <div className="text-sm text-slate-gray">Current Score</div>
+                           <div className="text-3xl font-bold text-signal-orange">{v.score.toFixed(1)}%</div>
                        </div>
                     </div>
                 </Card>
