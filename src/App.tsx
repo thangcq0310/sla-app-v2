@@ -104,6 +104,8 @@ export default function App() {
   const [evaluationMonth, setEvaluationMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [vendorEvalMonth, setVendorEvalMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedMonths, setSubmittedMonths] = useState<string[]>([]);
+  const [vendorScoresData, setVendorScoresData] = useState<any[]>([]);
   const [vendorSearch, setVendorSearch] = useState('');
   const [vendorFilterType, setVendorFilterType] = useState('All');
   const [selectedVendor, setSelectedVendor] = useState<any>(null);
@@ -152,6 +154,13 @@ export default function App() {
       const warehouseKpiSnapshot = await getDocs(warehouseKpiCollection);
       const warehouseKpiList = warehouseKpiSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setWarehouseKpiConfig(warehouseKpiList);
+
+      // Load submitted months for vendors
+      const scoresCollection = collection(db, "vendorScores");
+      const scoresSnapshot = await getDocs(scoresCollection);
+      const allScores = scoresSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setSubmittedMonths([...new Set(allScores.map((s: any) => s.month))]);
+      setVendorScoresData(allScores);
     };
 
     fetchFirestoreData();
@@ -387,11 +396,38 @@ const handleEditVendor = (vendor: any) => {
   };
 
   const handleSubmitScore = async () => {
+    if (!selectedVendor || !evaluationMonth) return;
+    if (submittedMonths.includes(evaluationMonth)) {
+      setDialogState({ isOpen: true, title: 'Already Submitted', message: `Score for ${evaluationMonth} has already been submitted.`, type: 'error' });
+      return;
+    }
     try {
+      // Save scores for this month
+      const monthDocId = `${selectedVendor.id}_${evaluationMonth}`;
+      const config = selectedVendor.type === 'Transport' ? transportKpiConfig : warehouseKpiConfig;
+      const scoresData = config?.map((kpi: any) => ({
+        criteriaId: kpi.id,
+        criteriaLabel: kpi.label,
+        weight: kpi.weight,
+        target: kpi.target,
+        score: 100
+      })) || [];
+      
+      await setDoc(doc(db, "vendorScores", monthDocId), {
+        vendorId: selectedVendor.id,
+        vendorName: selectedVendor.name,
+        month: evaluationMonth,
+        type: selectedVendor.type,
+        scores: scoresData,
+        createdAt: new Date().toISOString()
+      });
+      
+      setSubmittedMonths([...submittedMonths, evaluationMonth]);
+      
       setIsSubmitted(true);
-      setDialogState({ isOpen: true, title: 'Success', message: 'Score has been submitted successfully.', type: 'success' });
-    } catch (error) {
-      setDialogState({ isOpen: true, title: 'Error', message: 'Failed to submit score.', type: 'error' });
+      setDialogState({ isOpen: true, title: 'Success', message: `Score for ${evaluationMonth} has been submitted successfully.`, type: 'success' });
+    } catch (error: any) {
+      setDialogState({ isOpen: true, title: 'Error', message: error.message || 'Failed to submit score.', type: 'error' });
     }
   };
 
@@ -540,13 +576,16 @@ const handleEditVendor = (vendor: any) => {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Evaluation Period</label>
-                     <input 
-                       type="month" 
-                       value={evaluationMonth}
-                       onChange={(e) => setEvaluationMonth(e.target.value)}
-                       className="w-full border border-dust-taupe rounded-pill px-5 py-3 text-base outline-none focus:border-ink-black transition-colors bg-white"
-                     />
+<label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Evaluation Period</label>
+                      <input 
+                        type="month" 
+                        value={evaluationMonth}
+                        onChange={(e) => {
+                          setEvaluationMonth(e.target.value);
+                          setIsSubmitted(submittedMonths.includes(e.target.value));
+                        }}
+                        className="w-full border border-dust-taupe rounded-pill px-5 py-3 text-base outline-none focus:border-ink-black transition-colors bg-white"
+                      />
                 </div>
             </div>
         </Card>
@@ -1203,6 +1242,8 @@ return (
 {activeTab === 'my_profile' && (() => {
             const v = vendors.find(v => v.id === user.vendorId);
             const config = v?.type === 'Transport' ? transportKpiConfig : warehouseKpiConfig;
+            const vendorMonthScores = vendorScoresData.find(s => s.vendorId === v?.id && s.month === vendorEvalMonth);
+            
             if (user.isNew) {
               return (
                 <div className="text-center p-8 animate-fade-in">
@@ -1257,9 +1298,11 @@ return (
                           </tr>
                         </thead>
                         <tbody>
-                          {config?.map((criteria: any) => {
-                            const criteriaScore = Math.min(100, Math.max(0, v.score + (Math.random() * 10 - 5)));
+{config?.map((criteria: any) => {
+                            const savedScore = vendorMonthScores?.scores?.find((s: any) => s.criteriaId === criteria.id);
+                            const criteriaScore = savedScore?.score ?? v?.score ?? 0;
                             const isPass = criteriaScore >= criteria.target;
+                            
                             return (
                             <tr key={criteria.id} className="border-b border-dust-taupe">
                               <td className="py-4 px-4 font-medium">{criteria.label}</td>
