@@ -26,7 +26,7 @@ const auth = getAuth(app);
 // --- REDESIGNED COMPONENTS ---
 
 const Card = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <div className={`bg-lifted-cream border border-dust-taupe rounded-3xl shadow-halo ${className}`}>{children}</div>
+  <div className={`bg-lifted-cream border border-dust-taupe rounded-[40px] shadow-halo p-6 transition-all hover-lift cursor-pointer ${className}`}>{children}</div>
 );
 const Eyebrow = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
   <div className={`flex items-center gap-2 text-sm font-bold text-slate-gray uppercase tracking-widest ${className}`}>
@@ -71,7 +71,7 @@ const Dialog = ({ title, message, onClose, type = 'success' }: { title: string, 
   const color = type === 'success' ? 'text-green-500' : 'text-signal-orange';
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-in fade-in duration-300">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-fade-in">
       <Card className="p-10 max-w-md w-full mx-4 text-center">
         <Icon className={`w-16 h-16 ${color} mx-auto mb-4`} />
         <h2 className={`text-2xl font-bold tracking-tight text-ink-black`}>{title}</h2>
@@ -375,7 +375,7 @@ const handleLogin = async (e: React.FormEvent) => {
         </Card>
     );
     return (
-      <div className="animate-in fade-in duration-500">
+      <div className="animate-fade-in">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <StatCard title="Warehouse Performance" value={`${dashboardStats.warehouseAvg.toFixed(1)}%`} subtext="Average score this month" />
           <StatCard title="Transport Performance" value={`${dashboardStats.transportAvg.toFixed(1)}%`} subtext="Average score this month" />
@@ -439,7 +439,7 @@ const handleLogin = async (e: React.FormEvent) => {
     };
     if (isEditingKpi && editingType === type) {
        return (
-         <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
+         <div className="animate-fade-in max-w-4xl mx-auto">
            <button onClick={() => setIsEditingKpi(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
              <ChevronLeft size={16} /> Back to SLA Evaluation
            </button>
@@ -493,7 +493,7 @@ const handleLogin = async (e: React.FormEvent) => {
        );
     }
     return (
-      <div className="space-y-8 animate-in fade-in duration-500 max-w-4xl mx-auto">
+      <div className="space-y-8 animate-fade-in max-w-4xl mx-auto">
         <Card className="p-8">
             <div className="flex justify-between items-start">
                 <div>
@@ -554,7 +554,7 @@ const handleLogin = async (e: React.FormEvent) => {
     const getGrade = (score: number) => score >= 90 ? 'A' : score >= 80 ? 'B' : 'C';
     if (showVendorForm) {
       return (
-         <div className="animate-in fade-in duration-500 max-w-3xl mx-auto">
+         <div className="animate-fade-in max-w-3xl mx-auto">
            <button onClick={() => setShowVendorForm(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
              <ChevronLeft size={16} /> Back to Vendor List
            </button>
@@ -607,7 +607,7 @@ const handleLogin = async (e: React.FormEvent) => {
     }
     if (selectedVendor) {
       return (
-        <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
+        <div className="animate-fade-in max-w-4xl mx-auto">
           <button onClick={() => setSelectedVendor(null)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
              <ChevronLeft size={16} /> Back to List
           </button>
@@ -639,7 +639,7 @@ const handleLogin = async (e: React.FormEvent) => {
       (v.name.toLowerCase().includes(vendorSearch.toLowerCase()) || v.id.toLowerCase().includes(vendorSearch.toLowerCase()))
     );
 return (
-      <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="space-y-6 animate-fade-in">
           <div className="flex flex-col sm:flex-row gap-4 mb-2">
              <div className="relative flex-1">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-gray" />
@@ -702,7 +702,7 @@ return (
   const renderFactoryManagement = () => {
     if (showFactoryForm) {
       return (
-        <div className="animate-in fade-in duration-500 max-w-3xl mx-auto">
+        <div className="animate-fade-in max-w-3xl mx-auto">
           <button onClick={() => setShowFactoryForm(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
             <ChevronLeft size={16} /> Back to Factory List
           </button>
@@ -751,7 +751,7 @@ return (
     }
     if (selectedFactory) {
       return (
-        <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
+        <div className="animate-fade-in max-w-4xl mx-auto">
           <button onClick={() => setSelectedFactory(null)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
             <ChevronLeft size={16} /> Back to List
           </button>
@@ -780,7 +780,7 @@ return (
       f.region.toLowerCase().includes(factorySearch.toLowerCase())
     );
     return (
-      <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="space-y-6 animate-fade-in">
         <div className="relative flex-1">
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-gray" />
           <input 
@@ -832,7 +832,7 @@ return (
     const STATUS_COLOR: Record<string, 'gray' | 'yellow'> = { 'Open': 'yellow', 'In Progress': 'yellow', 'Resolved': 'gray', 'Closed': 'gray' };
     if (showCapaForm) {
       return (
-        <div className="animate-in fade-in duration-500 max-w-3xl mx-auto">
+        <div className="animate-fade-in max-w-3xl mx-auto">
           <button onClick={() => setShowCapaForm(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
             <ChevronLeft size={16} /> Back to CAPA List
           </button>
@@ -932,7 +932,7 @@ return (
     const filteredCapas = baseCapas.filter(c => c.issue.toLowerCase().includes(capaSearch.toLowerCase()) || (c.id && c.id.toLowerCase().includes(capaSearch.toLowerCase())) || c.vendor.toLowerCase().includes(capaSearch.toLowerCase()));
     const sortedCapas = [...filteredCapas].sort((a,b) => (a.date < b.date) ? 1 : -1 );
     return (
-      <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="space-y-6 animate-fade-in">
          <div className="relative flex-1">
            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-gray" />
            <input 
@@ -984,7 +984,7 @@ return (
     return (
       <div className="flex h-screen w-full items-center justify-center bg-canvas-cream">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-pill animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-light-signal-orange border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-gray font-bold">Loading...</p>
         </div>
       </div>
@@ -1161,7 +1161,7 @@ return (
             const v = vendors.find(v => v.id === user.vendorId);
             if (user.isNew) {
               return (
-                <div className="text-center p-8 animate-in fade-in duration-500">
+                <div className="text-center p-8 animate-fade-in">
                   <Card className="max-w-lg mx-auto p-10">
                     <Users className="w-12 h-12 text-line mx-auto mb-4" />
                     <h2 className="text-xl font-bold">Welcome!</h2>
@@ -1173,7 +1173,7 @@ return (
             }
             if (!v) return <div className="text-center p-8">Error: Could not find your vendor profile. Please contact an admin.</div>;
             return (
-              <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
+              <div className="animate-fade-in max-w-4xl mx-auto">
                  <Card className="p-10">
                     <div className="flex justify-between items-start">
                        <div>
