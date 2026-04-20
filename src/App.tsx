@@ -26,30 +26,30 @@ const auth = getAuth(app);
 // --- REDESIGNED COMPONENTS (No changes) ---
 
 const Card = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <div className={`bg-card border border-line rounded-[40px] shadow-[0_10px_30px_-15px_rgba(26,26,26,0.1)] ${className}`}>{children}</div>
+  <div className={`bg-lifted border border-[#D1CDC7] rounded-[40px] shadow-[0_24px_48px_0_rgba(0,0,0,0.08)] ${className}`}>{children}</div>
 );
 const Eyebrow = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <div className={`flex items-center gap-2 text-sm font-bold text-text-muted uppercase tracking-widest ${className}`}>
-    <div className="w-1.5 h-1.5 rounded-full bg-accent-alt"></div>
+  <div className={`flex items-center gap-2 text-sm font-bold text-[#696969] uppercase tracking-widest ${className}`}>
+    <div className="w-1.5 h-1.5 rounded-full bg-[#F37338]"></div>
     {children}
   </div>
 );
 const Badge = ({ text, color = 'gray' }: { text: string; color?: 'gray' | 'orange' | 'red' | 'yellow' }) => {
   const colorClasses = {
-    gray: 'border-line text-text-muted',
-    orange: 'border-signal text-signal',
-    red: 'border-accent text-accent',
-    yellow: 'border-accent-alt text-accent-alt',
+    gray: 'border-[#D1CDC7] text-[#696969]',
+    orange: 'border-[#CF4500] text-[#CF4500]',
+    red: 'border-[#EB001B] text-[#EB001B]',
+    yellow: 'border-[#F79E1B] text-[#F79E1B]',
   };
-  return <span className={`px-3 py-1 text-xs font-bold rounded-full border ${colorClasses[color]}`}>{text}</span>;
+  return <span className={`px-3 py-1 text-xs font-bold rounded-[999px] border ${colorClasses[color]}`}>{text}</span>;
 };
 const PrimaryButton = ({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button {...props} className={`px-8 py-3 bg-text-main text-white rounded-full font-bold text-sm hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
+  <button {...props} className={`px-6 py-3 bg-[#141413] text-[#F3F0EE] rounded-[20px] font-medium text-base tracking-[-0.32px] hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
     {children}
   </button>
 );
 const SecondaryButton = ({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button {...props} className={`px-8 py-3 bg-transparent border border-line text-text-main rounded-full font-bold text-sm hover:bg-black/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
+  <button {...props} className={`px-6 py-3 bg-white border border-[#141413] text-[#141413] rounded-[20px] font-normal text-base tracking-[-0.32px] hover:bg-[#F4F4F4] transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
     {children}
   </button>
 );
@@ -361,8 +361,8 @@ const handleLogin = async (e: React.FormEvent) => {
     const StatCard = ({ title, value, subtext }: {title:string, value:string, subtext:string}) => (
         <Card className="p-8">
             <Eyebrow>{title}</Eyebrow>
-            <div className="text-2xl font-bold my-3">{value}</div>
-            <p className="text-text-muted text-sm">{subtext}</p>
+            <div className="text-3xl font-medium my-3 tracking-tight">{value}</div>
+            <p className="text-[#696969] text-sm">{subtext}</p>
         </Card>
     );
     return (
@@ -380,12 +380,12 @@ const handleLogin = async (e: React.FormEvent) => {
             <div className="flex-1 min-h-[300px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={dashboardStats.trendData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-line)" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: 'var(--color-text-muted)', fontSize: 12}} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--color-text-muted)', fontSize: 12}} domain={[60, 100]} />
-                  <Tooltip cursor={{stroke: 'var(--color-line)'}} contentStyle={{ borderRadius: '20px', border: '1px solid var(--color-line)' }} />
-                  <Line type="monotone" dataKey="warehouse" name="Warehouse" stroke="var(--color-accent)" strokeWidth={3} dot={{r: 5}} />
-                  <Line type="monotone" dataKey="transport" name="Transport" stroke="var(--color-accent-alt)" strokeWidth={3} dot={{r: 5}} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#D1CDC7" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#696969', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#696969', fontSize: 12}} domain={[60, 100]} />
+                  <Tooltip cursor={{stroke: '#D1CDC7'}} contentStyle={{ borderRadius: '20px', border: '1px solid #D1CDC7' }} />
+                  <Line type="monotone" dataKey="warehouse" name="Warehouse" stroke="#CF4500" strokeWidth={3} dot={{r: 5}} />
+                  <Line type="monotone" dataKey="transport" name="Transport" stroke="#F37338" strokeWidth={3} dot={{r: 5}} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -394,25 +394,25 @@ const handleLogin = async (e: React.FormEvent) => {
           <Card className="lg:col-span-2 p-8 flex flex-col h-[350px]">
             <Eyebrow>Vendor Classification</Eyebrow>
              <div className="flex-1 flex items-center justify-center">
-                <div className="w-40 h-40 rounded-full border-[20px] border-accent border-r-accent-alt border-b-text-muted relative">
+                <div className="w-40 h-40 rounded-full border-[20px] border-[#CF4500] border-r-[#F37338] border-b-[#696969] relative">
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                    <div className="text-3xl font-extrabold leading-none">{vendors.length}</div>
-                    <div className="text-sm font-bold text-text-muted uppercase tracking-widest">Vendors</div>
+                    <div className="text-3xl font-medium leading-none">{vendors.length}</div>
+                    <div className="text-sm font-bold text-[#696969] uppercase tracking-widest">Vendors</div>
                   </div>
                 </div>
             </div>
             <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
-                    <div className="font-bold text-lg">{vendors.length > 0 ? ((vendors.filter(v => v.score >= 90).length / vendors.length) * 100).toFixed(0) : 0}%</div>
-                    <div className="text-sm text-text-muted">Grade A</div>
+                    <div className="font-medium text-lg">{vendors.length > 0 ? ((vendors.filter(v => v.score >= 90).length / vendors.length) * 100).toFixed(0) : 0}%</div>
+                    <div className="text-sm text-[#696969]">Grade A</div>
                 </div>
                  <div>
-                    <div className="font-bold text-lg">{vendors.length > 0 ? ((vendors.filter(v => v.score >= 80 && v.score < 90).length / vendors.length) * 100).toFixed(0) : 0}%</div>
-                    <div className="text-sm text-text-muted">Grade B</div>
+                    <div className="font-medium text-lg">{vendors.length > 0 ? ((vendors.filter(v => v.score >= 80 && v.score < 90).length / vendors.length) * 100).toFixed(0) : 0}%</div>
+                    <div className="text-sm text-[#696969]">Grade B</div>
                 </div>
                  <div>
-                    <div className="font-bold text-lg">{vendors.length > 0 ? ((vendors.filter(v => v.score < 80).length / vendors.length) * 100).toFixed(0) : 0}%</div>
-                    <div className="text-sm text-text-muted">Grade C</div>
+                    <div className="font-medium text-lg">{vendors.length > 0 ? ((vendors.filter(v => v.score < 80).length / vendors.length) * 100).toFixed(0) : 0}%</div>
+                    <div className="text-sm text-[#696969]">Grade C</div>
                 </div>
             </div>
           </Card>
@@ -629,63 +629,63 @@ const handleLogin = async (e: React.FormEvent) => {
       (vendorFilterType === 'All' || v.type === vendorFilterType) &&
       (v.name.toLowerCase().includes(vendorSearch.toLowerCase()) || v.id.toLowerCase().includes(vendorSearch.toLowerCase()))
     );
-    return (
+return (
       <div className="space-y-6 animate-in fade-in duration-500">
-         <div className="flex flex-col sm:flex-row gap-4 mb-2">
-            <div className="relative flex-1">
-               <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
-               <input 
-                 type="text" 
-                 placeholder="Search vendors by name or ID..." 
-                 className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-full text-base font-semibold outline-none focus:border-line shadow-sm transition-colors"
-                 value={vendorSearch}
-                 onChange={(e) => setVendorSearch(e.target.value)}
-               />
-            </div>
-            <select 
-              className="px-6 py-4 bg-white border-2 border-transparent rounded-full text-base font-bold text-text-main outline-none cursor-pointer shadow-sm appearance-none"
-              value={vendorFilterType}
-              onChange={(e) => setVendorFilterType(e.target.value)}
-            >
-              <option value="All">All Services</option>
-              <option value="Warehouse">Warehouse</option>
-              <option value="Transport">Transport</option>
-            </select>
-         </div>
-         <Card className="overflow-hidden">
-            <table className="w-full text-left">
-              <thead className="bg-white">
-                <tr>
-                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Vendor</th>
-                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Service</th>
-                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Factory</th>
-                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Score</th>
-                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Grade</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredVendors.map((item) => (
-                  <tr key={item.id} className="hover:bg-bg cursor-pointer transition-colors group border-t border-line" onClick={() => setSelectedVendor(item)}>
-                    <td className="py-5 px-6">
-                      <div className="font-bold text-base text-text-main group-hover:text-accent-alt transition-colors">{item.name}</div>
-                      <div className="text-sm text-text-muted font-mono">{item.id}</div>
-                    </td>
-                    <td className="py-5 px-6 text-base font-semibold">{item.type}</td>
-                    <td className="py-5 px-6 text-base font-semibold">{item.factory}</td>
-                    <td className="py-5 px-6 text-lg font-bold">{item.score.toFixed(1)}%</td>
-                    <td className="py-5 px-6"><Badge text={`Grade ${getGrade(item.score)}`} color={item.critical ? 'orange' : 'gray'} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {filteredVendors.length === 0 && (
-              <div className="p-20 text-center">
-                 <FileText className="w-12 h-12 text-line mx-auto mb-4" />
-                 <p className="text-text-main font-bold text-lg">No vendors found.</p>
-                 <p className="text-text-muted text-base mt-2">Try adjusting your search or filters.</p>
-              </div>
-            )}
-         </Card>
+          <div className="flex flex-col sm:flex-row gap-4 mb-2">
+             <div className="relative flex-1">
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#696969]" />
+                <input 
+                  type="text" 
+                  placeholder="Search vendors by name or ID..." 
+                  className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-[999px] text-base font-medium outline-none focus:border-[#D1CDC7] shadow-sm transition-colors"
+                  value={vendorSearch}
+                  onChange={(e) => setVendorSearch(e.target.value)}
+                />
+             </div>
+             <select 
+               className="px-6 py-4 bg-white border-2 border-transparent rounded-[999px] text-base font-bold text-[#141413] outline-none cursor-pointer shadow-sm appearance-none"
+               value={vendorFilterType}
+               onChange={(e) => setVendorFilterType(e.target.value)}
+             >
+               <option value="All">All Services</option>
+               <option value="Warehouse">Warehouse</option>
+               <option value="Transport">Transport</option>
+             </select>
+          </div>
+          <Card className="overflow-hidden">
+             <table className="w-full text-left">
+               <thead className="bg-white">
+                 <tr>
+                   <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Vendor</th>
+                   <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Service</th>
+                   <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Factory</th>
+                   <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Score</th>
+                   <th className="py-4 px-6 text-sm font-bold uppercase text-[#696969] tracking-wider">Grade</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {filteredVendors.map((item) => (
+                   <tr key={item.id} className="hover:bg-[#F3F0EE] cursor-pointer transition-colors group border-t border-[#D1CDC7]" onClick={() => setSelectedVendor(item)}>
+                     <td className="py-5 px-6">
+                       <div className="font-medium text-base text-[#141413] group-hover:text-[#F37338] transition-colors">{item.name}</div>
+                       <div className="text-sm text-[#696969] font-mono">{item.id}</div>
+                     </td>
+                     <td className="py-5 px-6 text-base font-medium">{item.type}</td>
+                     <td className="py-5 px-6 text-base font-medium">{item.factory}</td>
+                     <td className="py-5 px-6 text-lg font-bold">{item.score.toFixed(1)}%</td>
+                     <td className="py-5 px-6"><Badge text={`Grade ${getGrade(item.score)}`} color={item.critical ? 'orange' : 'gray'} /></td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+             {filteredVendors.length === 0 && (
+               <div className="p-20 text-center">
+                  <FileText className="w-12 h-12 text-[#D1CDC7] mx-auto mb-4" />
+                  <p className="text-[#141413] font-bold text-lg">No vendors found.</p>
+                  <p className="text-[#696969] text-base mt-2">Try adjusting your search or filters.</p>
+               </div>
+             )}
+          </Card>
       </div>
     );
   };
@@ -988,10 +988,10 @@ const handleLogin = async (e: React.FormEvent) => {
         <div className="text-center mb-8">
           <BrandLogo />
         </div>
-        <h2 className="text-xl font-bold text-center tracking-tight">
+        <h2 className="text-xl font-medium text-center tracking-tight text-[#141413]">
           {authMode === 'login' ? 'Welcome Back' : 'Create Account'}
         </h2>
-        <p className="text-text-muted text-center mt-2 mb-6">
+        <p className="text-[#696969] text-center mt-2 mb-6">
           {authMode === 'login' ? 'Sign in to continue' : 'Register to access the system'}
         </p>
         <form onSubmit={authMode === 'login' ? handleLogin : handleRegister} className="space-y-4">
@@ -1002,7 +1002,7 @@ const handleLogin = async (e: React.FormEvent) => {
               required
               value={authFormData.email}
               onChange={(e) => setAuthFormData({...authFormData, email: e.target.value})}
-              className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main"
+              className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413] transition-colors"
             />
           </div>
           <div>
@@ -1012,7 +1012,7 @@ const handleLogin = async (e: React.FormEvent) => {
               required
               value={authFormData.password}
               onChange={(e) => setAuthFormData({...authFormData, password: e.target.value})}
-              className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main"
+              className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413] transition-colors"
             />
           </div>
           {authMode === 'register' && (
@@ -1023,11 +1023,11 @@ const handleLogin = async (e: React.FormEvent) => {
                 required
                 value={authFormData.confirmPassword}
                 onChange={(e) => setAuthFormData({...authFormData, confirmPassword: e.target.value})}
-                className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main"
+                className="w-full border border-[#D1CDC7] rounded-[999px] px-5 py-3 bg-white outline-none focus:border-[#141413] transition-colors"
               />
             </div>
           )}
-          {authError && <p className="text-accent text-sm text-center">{authError}</p>}
+          {authError && <p className="text-[#CF4500] text-sm text-center">{authError}</p>}
           <PrimaryButton type="submit" className="w-full">
             {authMode === 'login' ? 'Sign In' : 'Sign Up'}
           </PrimaryButton>
@@ -1035,7 +1035,7 @@ const handleLogin = async (e: React.FormEvent) => {
         <div className="mt-6 text-center">
           <button
             onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
-            className="text-sm font-bold text-text-muted hover:text-accent-alt"
+            className="text-sm font-bold text-[#696969] hover:text-[#F37338]"
           >
             {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
           </button>
@@ -1049,11 +1049,11 @@ const handleLogin = async (e: React.FormEvent) => {
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-bg text-text-main font-sans print:h-auto print:overflow-visible print:bg-white">
-      <aside className={`bg-sidebar text-white p-6 flex flex-col h-full flex-shrink-0 print:hidden transition-all duration-300 ease-in-out relative ${isSidebarCollapsed ? 'w-[104px] items-center' : 'w-[280px]'}`}>
+    <div className="flex h-screen w-full overflow-hidden bg-[#F3F0EE] text-[#141413] font-sans print:h-auto print:overflow-visible print:bg-white">
+      <aside className={`bg-[#141413] text-white p-6 flex flex-col h-full flex-shrink-0 print:hidden transition-all duration-300 ease-in-out relative ${isSidebarCollapsed ? 'w-[104px] items-center' : 'w-[280px]'}`}>
         <button 
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
-          className="absolute -right-4 top-10 w-8 h-8 bg-card border border-line rounded-full flex items-center justify-center text-text-muted hover:text-text-main shadow-md cursor-pointer transition-all z-10"
+          className="absolute -right-4 top-10 w-8 h-8 bg-white border border-[#D1CDC7] rounded-full flex items-center justify-center text-[#696969] hover:text-[#141413] shadow-md cursor-pointer transition-all z-10"
         >
           {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
@@ -1070,9 +1070,9 @@ const handleLogin = async (e: React.FormEvent) => {
                   key={item.tab}
                   onClick={() => setActiveTab(item.tab)} 
                   title={isSidebarCollapsed ? item.label : ""}
-                  className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-full text-sm font-bold transition-colors ${activeTab === item.tab ? 'bg-white text-text-main' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
-                   <item.icon size={20} /> 
-                   {!isSidebarCollapsed && <span>{item.label}</span>}
+                  className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-[999px] text-sm font-medium tracking-[-0.16px] transition-all ${activeTab === item.tab ? 'bg-[#F3F0EE] text-[#141413]' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
+                    <item.icon size={20} /> 
+                    {!isSidebarCollapsed && <span>{item.label}</span>}
                 </button>
               ))}
             </>
@@ -1083,9 +1083,9 @@ const handleLogin = async (e: React.FormEvent) => {
                   key={item.tab} 
                   onClick={() => setActiveTab(item.tab)} 
                   title={isSidebarCollapsed ? item.label : ""}
-                  className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-full text-sm font-bold transition-colors ${activeTab === item.tab ? 'bg-white text-text-main' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
-                   <item.icon size={20} /> 
-                   {!isSidebarCollapsed && <span>{item.label}</span>}
+                  className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-[999px] text-sm font-medium tracking-[-0.16px] transition-all ${activeTab === item.tab ? 'bg-[#F3F0EE] text-[#141413]' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
+                    <item.icon size={20} /> 
+                    {!isSidebarCollapsed && <span>{item.label}</span>}
                 </button>
               ))}
             </>
@@ -1094,19 +1094,19 @@ const handleLogin = async (e: React.FormEvent) => {
         
         <div className="mt-auto pt-4 border-t border-white/10">
           <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : 'px-4'} mb-2`}>
-            <div className="w-8 h-8 rounded-full bg-accent-alt flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-10 h-10 rounded-full bg-[#F37338] flex items-center justify-center text-white font-bold text-sm">
               {user.email?.[0].toUpperCase()}
             </div>
             {!isSidebarCollapsed && (
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold truncate">{user.email}</div>
+                <div className="text-sm font-medium truncate">{user.email}</div>
                 <div className="text-xs text-gray-400 capitalize">{user.role}</div>
               </div>
             )}
           </div>
           <button 
             onClick={handleLogout}
-            className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-12' : 'px-4 h-10'} rounded-full text-sm font-bold text-gray-400 hover:bg-white/10 hover:text-white transition-colors`}
+            className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-12' : 'px-4 h-10'} rounded-[999px] text-sm font-medium tracking-[-0.16px] text-gray-400 hover:bg-white/10 hover:text-white transition-colors`}
           >
             <LogOut size={20} />
             {!isSidebarCollapsed && <span>Logout</span>}
