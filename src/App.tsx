@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, getDoc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 import {
   Truck, Warehouse, Users, Search, Plus, LayoutDashboard, FileText, ChevronLeft, ChevronRight, X, MapPin, LogOut, CheckCircle, AlertCircle
@@ -253,11 +253,7 @@ const handleLogin = async (e: React.FormEvent) => {
     if (!vendorFormData) return;
 
     try {
-      if (vendorFormData.id.startsWith('VN-')) {
-        await updateDoc(doc(db, "vendors", vendorFormData.id), vendorFormData);
-      } else {
-        await addDoc(collection(db, "vendors"), vendorFormData);
-      }
+      await setDoc(doc(db, "vendors", vendorFormData.id), vendorFormData);
       
       const vendorsCollection = collection(db, "vendors");
       const vendorsSnapshot = await getDocs(vendorsCollection);
@@ -328,11 +324,7 @@ const handleLogin = async (e: React.FormEvent) => {
     if (!factoryFormData) return;
 
     try {
-      if (factoryFormData.id.startsWith('FAC-')) {
-        await updateDoc(doc(db, "factories", factoryFormData.id), factoryFormData);
-      } else {
-        await addDoc(collection(db, "factories"), factoryFormData);
-      }
+      await setDoc(doc(db, "factories", factoryFormData.id), factoryFormData);
 
       const factoriesCollection = collection(db, "factories");
       const factoriesSnapshot = await getDocs(factoriesCollection);
