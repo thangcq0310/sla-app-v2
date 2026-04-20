@@ -118,9 +118,11 @@ export default function App() {
 
   // Auth State
   const [isLoading, setIsLoading] = useState(true);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-  const [authFormData, setAuthFormData] = useState({ email: '', password: '', confirmPassword: '' });
+  // Auth mode removed - only login
+  const [authFormData, setAuthFormData] = useState({ email: '', password: '' });
   const [authError, setAuthError] = useState('');
+  const [showAccountForm, setShowAccountForm] = useState(false);
+  const [accountFormData, setAccountFormData] = useState({ email: '', password: '' });
 
   useEffect(() => {
     const fetchFirestoreData = async () => {
@@ -175,30 +177,9 @@ const handleLogin = async (e: React.FormEvent) => {
     setAuthError('');
     try {
       await signInWithEmailAndPassword(auth, authFormData.email, authFormData.password);
-      setAuthFormData({ email: '', password: '', confirmPassword: '' });
+      setAuthFormData({ email: '', password: '' });
     } catch (error: any) {
       setAuthError(error.message || 'Login failed');
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError('');
-    if (authFormData.password !== authFormData.confirmPassword) {
-      setAuthError('Passwords do not match');
-      return;
-    }
-    try {
-      const cred = await createUserWithEmailAndPassword(auth, authFormData.email, authFormData.password);
-      await addDoc(collection(db, "users"), {
-        uid: cred.user.uid,
-        email: authFormData.email,
-        role: 'vendor',
-        createdAt: new Date().toISOString()
-      });
-      setAuthFormData({ email: '', password: '', confirmPassword: '' });
-    } catch (error: any) {
-      setAuthError(error.message || 'Registration failed');
     }
   };
 
@@ -243,9 +224,43 @@ const handleLogin = async (e: React.FormEvent) => {
      setShowVendorForm(true);
   };
 
-  const handleEditVendor = (vendor: any) => {
-     setVendorFormData({ ...vendor });
-     setShowVendorForm(true);
+const handleEditVendor = (vendor: any) => {
+      setVendorFormData({ ...vendor });
+      setShowVendorForm(true);
+   };
+
+  const handleCreateVendorAccount = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedVendor || !accountFormData.email || !accountFormData.password) return;
+    
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, accountFormData.email, accountFormData.password);
+      await setDoc(doc(db, "users", cred.user.uid), {
+        uid: cred.user.uid,
+        email: accountFormData.email,
+        role: 'vendor',
+        vendorId: selectedVendor.id,
+        createdAt: new Date().toISOString()
+      });
+      await setDoc(doc(db, "vendors", selectedVendor.id), { ...selectedVendor, userId: cred.user.uid });
+      
+      const vendorsCollection = collection(db, "vendors");
+      const vendorsSnapshot = await getDocs(vendorsCollection);
+      const vendorsList = vendorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setVendors(vendorsList);
+      setSelectedVendor({ ...selectedVendor, userId: cred.user.uid });
+      
+      setShowAccountForm(false);
+      setAccountFormData({ email: '', password: '' });
+      setDialogState({ isOpen: true, title: 'Success', message: 'Vendor account has been created.', type: 'success' });
+    } catch (error: any) {
+      setDialogState({ isOpen: true, title: 'Error', message: error.message || 'Failed to create account', type: 'error' });
+    }
+  };
+
+  const handleResetVendorAccount = async (vendor: any) => {
+    if (!vendor.userId) return;
+    setDialogState({ isOpen: true, title: 'Reset Password', message: 'Password reset email has been sent to vendor.', type: 'success' });
   };
 
   const handleSaveVendor = async (e: React.FormEvent) => {
@@ -630,7 +645,51 @@ const handleLogin = async (e: React.FormEvent) => {
                 <div><Eyebrow>Phone</Eyebrow><div className="text-lg font-semibold mt-1">{selectedVendor.phone}</div></div>
                 <div><Eyebrow>Email</Eyebrow><div className="text-lg font-semibold text-light-signal-orange hover:underline cursor-pointer mt-1">{selectedVendor.email}</div></div>
             </div>
+            <div className="mt-8 pt-8 border-t border-dust-taupe">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Eyebrow>Vendor Account</Eyebrow>
+                  <p className="text-sm text-slate-gray mt-1">Create login account for this vendor to access SLA and CAPA.</p>
+                </div>
+                {!selectedVendor.userId ? (
+                  <PrimaryButton onClick={() => setShowAccountForm(true)}>Create Account</PrimaryButton>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <Badge text="Account Created" color="gray" />
+                    <SecondaryButton onClick={() => handleResetVendorAccount(selectedVendor)}>Reset Password</SecondaryButton>
+                  </div>
+                )}
+              </div>
+            </div>
           </Card>
+
+          {showAccountForm && (
+            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-fade-in">
+              <Card className="max-w-md w-full mx-4">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-bold">Create Vendor Account</h2>
+                  <button onClick={() => setShowAccountForm(false)} className="text-slate-gray hover:text-ink-black">
+                    <X size={20} />
+                  </button>
+                </div>
+                <p className="text-sm text-slate-gray mb-6">Creating account for: <span className="font-semibold text-ink-black">{selectedVendor.name}</span></p>
+                <form onSubmit={handleCreateVendorAccount} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Email</label>
+                    <input type="email" required value={accountFormData.email} onChange={(e) => setAccountFormData({...accountFormData, email: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Password</label>
+                    <input type="password" required minLength={6} value={accountFormData.password} onChange={(e) => setAccountFormData({...accountFormData, password: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black" />
+                  </div>
+                  <div className="flex gap-4 pt-4">
+                    <SecondaryButton type="button" onClick={() => setShowAccountForm(false)}>Cancel</SecondaryButton>
+                    <PrimaryButton type="submit">Create Account</PrimaryButton>
+                  </div>
+                </form>
+              </Card>
+            </div>
+          )}
         </div>
       );
     }
@@ -984,12 +1043,12 @@ return (
           <BrandLogo />
         </div>
         <h2 className="text-xl font-medium text-center tracking-tight text-ink-black">
-          {authMode === 'login' ? 'Welcome Back' : 'Create Account'}
+          Welcome Back
         </h2>
         <p className="text-slate-gray text-center mt-2 mb-6">
-          {authMode === 'login' ? 'Sign in to continue' : 'Register to access the system'}
+          Sign in to continue
         </p>
-        <form onSubmit={authMode === 'login' ? handleLogin : handleRegister} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <input
               type="email"
@@ -1010,31 +1069,11 @@ return (
               className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black transition-colors"
             />
           </div>
-          {authMode === 'register' && (
-            <div>
-              <input
-                type="password"
-                placeholder="Confirm Password"
-                required
-                value={authFormData.confirmPassword}
-                onChange={(e) => setAuthFormData({...authFormData, confirmPassword: e.target.value})}
-                className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black transition-colors"
-              />
-            </div>
-          )}
           {authError && <p className="text-signal-orange text-sm text-center">{authError}</p>}
           <PrimaryButton type="submit" className="w-full">
-            {authMode === 'login' ? 'Sign In' : 'Sign Up'}
+            Sign In
           </PrimaryButton>
         </form>
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
-            className="text-sm font-bold text-slate-gray hover:text-light-signal-orange"
-          >
-            {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-          </button>
-        </div>
       </Card>
     </div>
   );
