@@ -102,6 +102,8 @@ export default function App() {
   const [editingType, setEditingType] = useState<'Transport' | 'Warehouse' | null>(null);
   const [editingKpiData, setEditingKpiData] = useState<any[]>([]);
   const [evaluationMonth, setEvaluationMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [vendorEvalMonth, setVendorEvalMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [vendorSearch, setVendorSearch] = useState('');
   const [vendorFilterType, setVendorFilterType] = useState('All');
   const [selectedVendor, setSelectedVendor] = useState<any>(null);
@@ -377,7 +379,20 @@ const handleEditVendor = (vendor: any) => {
        } catch (error) {
           console.error("Error saving KPI config: ", error);
           setDialogState({ isOpen: true, title: 'Error', message: 'Failed to save KPI configuration. Please try again.', type: 'error' });
-       }
+}
+   };
+
+  const handleSaveDraft = () => {
+    setDialogState({ isOpen: true, title: 'Saved', message: 'Draft has been saved.', type: 'success' });
+  };
+
+  const handleSubmitScore = async () => {
+    try {
+      setIsSubmitted(true);
+      setDialogState({ isOpen: true, title: 'Success', message: 'Score has been submitted successfully.', type: 'success' });
+    } catch (error) {
+      setDialogState({ isOpen: true, title: 'Error', message: 'Failed to submit score.', type: 'error' });
+    }
   };
 
 // --- RENDER METHODS ---
@@ -557,10 +572,13 @@ const handleEditVendor = (vendor: any) => {
             ))}
           </div>
         </Card>
-        <div className="mt-8 pt-8 border-t border-dust-taupe flex justify-end gap-4">
-             <SecondaryButton onClick={() => window.print()}>Print / Save as PDF</SecondaryButton>
-             <PrimaryButton>Submit Score</PrimaryButton>
-        </div>
+<div className="mt-8 pt-8 border-t border-dust-taupe flex justify-end gap-4">
+              <SecondaryButton onClick={() => window.print()}>Print / Save as PDF</SecondaryButton>
+              <SecondaryButton onClick={handleSaveDraft} disabled={isSubmitted}>Save Draft</SecondaryButton>
+              <PrimaryButton onClick={handleSubmitScore} disabled={isSubmitted}>
+                {isSubmitted ? 'Submitted' : 'Submit Score'}
+              </PrimaryButton>
+         </div>
       </div>
     );
   };
@@ -1182,13 +1200,14 @@ return (
         {activeTab === 'dashboard' && renderDashboard()}
         {activeTab === 'transport_sla' && renderSLAInput('Transport')}
         {activeTab === 'warehouse_sla' && renderSLAInput('Warehouse')}
-        {activeTab === 'my_profile' && (() => {
+{activeTab === 'my_profile' && (() => {
             const v = vendors.find(v => v.id === user.vendorId);
+            const config = v?.type === 'Transport' ? transportKpiConfig : warehouseKpiConfig;
             if (user.isNew) {
               return (
                 <div className="text-center p-8 animate-fade-in">
                   <Card className="max-w-lg mx-auto p-10">
-                    <Users className="w-12 h-12 text-line mx-auto mb-4" />
+                    <Users className="w-12 h-12 text-dust-taupe mx-auto mb-4" />
                     <h2 className="text-xl font-bold">Welcome!</h2>
                     <p className="text-slate-gray mt-2">Your account has been created, but your vendor profile is not yet set up.</p>
                     <p className="text-slate-gray mt-2">Please contact an administrator to finalize your account and assign you to a specific vendor.</p>
@@ -1198,9 +1217,9 @@ return (
             }
             if (!v) return <div className="text-center p-8">Error: Could not find your vendor profile. Please contact an admin.</div>;
             return (
-              <div className="animate-fade-in max-w-4xl mx-auto">
-                 <Card className="p-10">
-                    <div className="flex justify-between items-start">
+              <div className="animate-fade-in max-w-4xl mx-auto space-y-6">
+                 <Card className="p-8">
+                    <div className="flex justify-between items-start mb-6">
                        <div>
                             <div className="flex items-center gap-4 mb-2">
                                 <h2 className="text-2xl font-bold m-0 tracking-tight">{v.name}</h2>
@@ -1213,7 +1232,55 @@ return (
                            <div className="text-3xl font-bold text-signal-orange">{v.score.toFixed(1)}%</div>
                        </div>
                     </div>
-                </Card>
+                    <div className="flex items-center gap-4">
+                      <label className="text-sm font-bold text-slate-gray uppercase">Evaluation Period</label>
+                      <input 
+                        type="month" 
+                        value={vendorEvalMonth}
+                        onChange={(e) => setVendorEvalMonth(e.target.value)}
+                        className="border border-dust-taupe rounded-pill px-4 py-2 bg-white outline-none focus:border-ink-black"
+                      />
+                    </div>
+                 </Card>
+                 
+                 <Card className="p-8">
+                    <Eyebrow>Criteria Scores</Eyebrow>
+                    <div className="mt-6 overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b border-dust-taupe">
+                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray">Criteria</th>
+                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Weight</th>
+                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Target</th>
+                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Score</th>
+                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Result</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {config?.map((criteria: any) => {
+                            const criteriaScore = Math.min(100, Math.max(0, v.score + (Math.random() * 10 - 5)));
+                            const isPass = criteriaScore >= criteria.target;
+                            return (
+                            <tr key={criteria.id} className="border-b border-dust-taupe">
+                              <td className="py-4 px-4 font-medium">{criteria.label}</td>
+                              <td className="py-4 px-4 text-center">{criteria.weight}%</td>
+                              <td className="py-4 px-4 text-center">{criteria.target}%</td>
+                              <td className="py-4 px-4 text-center font-bold">
+                                {criteriaScore.toFixed(1)}
+                              </td>
+                              <td className="py-4 px-4 text-center">
+                                <Badge 
+                                  text={isPass ? 'Pass' : 'Fail'} 
+                                  color={isPass ? 'gray' : 'orange'} 
+                                />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        </tbody>
+                      </table>
+                    </div>
+                 </Card>
               </div>
             );
         })()}
