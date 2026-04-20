@@ -308,7 +308,7 @@ const handleLogin = async (e: React.FormEvent) => {
 
   const handleAddFactory = () => {
     const newId = `FAC-${(factories.length + 1).toString().padStart(3, '0')}`;
-    setFactoryFormData({ id: newId, name: '', address: '', region: '', status: 'Active' });
+    setFactoryFormData({ id: newId, name: '', address: '', status: 'Active' });
     setActiveTab('factories');
     setSelectedFactory(null);
     setShowFactoryForm(true);
@@ -719,16 +719,6 @@ return (
                   <input required type="text" value={factoryFormData?.name || ''} onChange={(e) => setFactoryFormData({...factoryFormData, name: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Region</label>
-                  <select value={factoryFormData?.region || 'Long An'} onChange={(e) => setFactoryFormData({...factoryFormData, region: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black appearance-none">
-                    <option value="Long An">Long An</option>
-                    <option value="Ho Chi Minh">Ho Chi Minh</option>
-                    <option value="Binh Duong">Binh Duong</option>
-                    <option value="Dong Nai">Dong Nai</option>
-                    <option value="Tay Ninh">Tay Ninh</option>
-                  </select>
-                </div>
-                <div>
                   <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Status</label>
                   <select value={factoryFormData?.status || 'Active'} onChange={(e) => setFactoryFormData({...factoryFormData, status: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black appearance-none">
                     <option value="Active">Active</option>
@@ -767,8 +757,7 @@ return (
               <SecondaryButton onClick={() => handleEditFactory(selectedFactory)}>Edit</SecondaryButton>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 pt-8 border-t border-dust-taupe">
-              <div><Eyebrow>Region</Eyebrow><div className="text-lg font-semibold mt-1">{selectedFactory.region}</div></div>
-              <div className="md:col-span-2"><Eyebrow>Address</Eyebrow><div className="text-lg font-semibold mt-1">{selectedFactory.address}</div></div>
+              <div><Eyebrow>Address</Eyebrow><div className="text-lg font-semibold mt-1">{selectedFactory.address}</div></div>
             </div>
           </Card>
         </div>
@@ -776,8 +765,7 @@ return (
     }
     const filteredFactories = factories.filter(f => 
       f.name.toLowerCase().includes(factorySearch.toLowerCase()) || 
-      f.id.toLowerCase().includes(factorySearch.toLowerCase()) ||
-      f.region.toLowerCase().includes(factorySearch.toLowerCase())
+      f.id.toLowerCase().includes(factorySearch.toLowerCase())
     );
     return (
       <div className="space-y-6 animate-fade-in">
@@ -785,7 +773,7 @@ return (
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-gray" />
           <input 
             type="text" 
-            placeholder="Search factories by name, ID, or region..." 
+            placeholder="Search factories by name or ID..." 
             className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-pill text-base font-semibold outline-none focus:border-dust-taupe shadow-sm transition-colors"
             value={factorySearch}
             onChange={(e) => setFactorySearch(e.target.value)}
@@ -796,7 +784,6 @@ return (
             <thead className="bg-white">
               <tr>
                 <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Factory</th>
-                <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Region</th>
                 <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Address</th>
                 <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Status</th>
               </tr>
@@ -808,7 +795,6 @@ return (
                     <div className="font-bold text-base text-ink-black group-hover:text-light-signal-orange transition-colors">{item.name}</div>
                     <div className="text-sm text-slate-gray font-mono">{item.id}</div>
                   </td>
-                  <td className="py-5 px-6 text-base font-semibold">{item.region}</td>
                   <td className="py-5 px-6 text-base text-slate-gray max-w-xs truncate">{item.address}</td>
                   <td className="py-5 px-6"><Badge text={item.status} color={item.status === 'Active' ? 'gray' : 'orange'} /></td>
                 </tr>
@@ -970,7 +956,7 @@ return (
             </table>
             {sortedCapas.length === 0 && (
               <div className="p-20 text-center">
-                 <FileText className="w-12 h-12 text-line mx-auto mb-4" />
+<FileText className="w-12 h-12 text-dust-taupe mx-auto mb-4" />
                  <p className="text-ink-black font-bold text-lg">No CAPAs found.</p>
                  <p className="text-slate-gray text-base mt-2">No corrective actions match your current search.</p>
               </div>
