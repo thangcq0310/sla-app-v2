@@ -1,121 +1,1188 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+import React, { useState, useEffect } from 'react';
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, getDoc } from "firebase/firestore";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
+import {
+  Truck, Warehouse, Users, Search, Plus, Calendar, AlertTriangle, LayoutDashboard, FileText, ArrowUpDown, ArrowUp, ArrowDown, Printer, Lock, ChevronLeft, ChevronRight, X, MapPin, LogOut
+} from 'lucide-react';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts';
+
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// --- REDESIGNED COMPONENTS (No changes) ---
+
+const Card = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
+  <div className={`bg-card border border-line rounded-[40px] shadow-[0_10px_30px_-15px_rgba(26,26,26,0.1)] ${className}`}>{children}</div>
+);
+const Eyebrow = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
+  <div className={`flex items-center gap-2 text-sm font-bold text-text-muted uppercase tracking-widest ${className}`}>
+    <div className="w-1.5 h-1.5 rounded-full bg-accent-alt"></div>
+    {children}
+  </div>
+);
+const Badge = ({ text, color = 'gray' }: { text: string; color?: 'gray' | 'orange' | 'red' | 'yellow' }) => {
+  const colorClasses = {
+    gray: 'border-line text-text-muted',
+    orange: 'border-signal text-signal',
+    red: 'border-accent text-accent',
+    yellow: 'border-accent-alt text-accent-alt',
+  };
+  return <span className={`px-3 py-1 text-xs font-bold rounded-full border ${colorClasses[color]}`}>{text}</span>;
+};
+const PrimaryButton = ({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+  <button {...props} className={`px-8 py-3 bg-text-main text-white rounded-full font-bold text-sm hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
+    {children}
+  </button>
+);
+const SecondaryButton = ({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+  <button {...props} className={`px-8 py-3 bg-transparent border border-line text-text-main rounded-full font-bold text-sm hover:bg-black/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
+    {children}
+  </button>
+);
+const BrandLogo = ({isPill = false, isLight = false}) => (
+    <div className={`flex items-center ${isPill ? 'justify-center' : 'gap-3'} ${isLight ? 'text-white' : 'text-text-main'}`}>
+        <div className="w-10 h-10 rounded-lg flex flex-shrink-0 items-center justify-center text-white font-black italic shadow-sm" style={{ background: 'linear-gradient(135deg, var(--color-accent), var(--color-accent-alt))' }}>
+            NF
+        </div>
+        {!isPill && (
+            <div className="overflow-hidden">
+               <div className="font-extrabold text-lg tracking-tight leading-tight">NAFOODS</div>
+               <div className={`text-xs font-bold uppercase tracking-widest mt-0.5 ${isLight ? 'text-gray-400' : 'text-text-muted'}`}>LOGISTICS</div>
+            </div>
+        )}
+    </div>
+);
+
+// --- MAIN APP ---
+export default function App() {
+  // Core State - Public Access (mock admin)
+  const [user, setUser] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  // App Data State
+  const [transportKpiConfig, setTransportKpiConfig] = useState<any[]>([]);
+  const [warehouseKpiConfig, setWarehouseKpiConfig] = useState<any[]>([]);
+  const [vendors, setVendors] = useState<any[]>([]);
+  const [capas, setCapas] = useState<any[]>([]);
+  const [factories, setFactories] = useState<any[]>([]);
+
+  // UI/Form State
+  const [isEditingKpi, setIsEditingKpi] = useState(false);
+  const [editingType, setEditingType] = useState<'Transport' | 'Warehouse' | null>(null);
+  const [editingKpiData, setEditingKpiData] = useState<any[]>([]);
+  const [evaluationMonth, setEvaluationMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [vendorSearch, setVendorSearch] = useState('');
+  const [vendorFilterType, setVendorFilterType] = useState('All');
+  const [selectedVendor, setSelectedVendor] = useState<any>(null);
+  const [showVendorForm, setShowVendorForm] = useState(false);
+  const [vendorFormData, setVendorFormData] = useState<any>(null);
+  const [showCapaForm, setShowCapaForm] = useState(false);
+  const [capaFormData, setCapaFormData] = useState<any>(null);
+  const [capaSearch, setCapaSearch] = useState('');
+  const [selectedFactory, setSelectedFactory] = useState<any>(null);
+  const [showFactoryForm, setShowFactoryForm] = useState(false);
+  const [factoryFormData, setFactoryFormData] = useState<any>(null);
+  const [factorySearch, setFactorySearch] = useState('');
+
+  // Auth State
+  const [isLoading, setIsLoading] = useState(true);
+  const [showAuthForm, setShowAuthForm] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authFormData, setAuthFormData] = useState({ email: '', password: '', confirmPassword: '' });
+  const [authError, setAuthError] = useState('');
+
+  useEffect(() => {
+    const fetchFirestoreData = async () => {
+      const factoriesCollection = collection(db, "factories");
+      const factoriesSnapshot = await getDocs(factoriesCollection);
+      const factoriesList = factoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setFactories(factoriesList);
+
+      const vendorsCollection = collection(db, "vendors");
+      const vendorsSnapshot = await getDocs(vendorsCollection);
+      const vendorsList = vendorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setVendors(vendorsList);
+
+      const capasCollection = collection(db, "capas");
+      const capasSnapshot = await getDocs(capasCollection);
+      const caspasList = capasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setCapas(caspasList);
+
+      const transportKpiCollection = collection(db, "transportKpi");
+      const transportKpiSnapshot = await getDocs(transportKpiCollection);
+      const transportKpiList = transportKpiSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setTransportKpiConfig(transportKpiList);
+
+      const warehouseKpiCollection = collection(db, "warehouseKpi");
+      const warehouseKpiSnapshot = await getDocs(warehouseKpiCollection);
+      const warehouseKpiList = warehouseKpiSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setWarehouseKpiConfig(warehouseKpiList);
+    };
+
+    fetchFirestoreData();
+
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const userDocRef = doc(db, "users", firebaseUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setUser({ uid: firebaseUser.uid, ...userDoc.data(), email: firebaseUser.email });
+        } else {
+          setUser({ uid: firebaseUser.uid, email: firebaseUser.email, role: 'admin' });
+        }
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    try {
+      await signInWithEmailAndPassword(auth, authFormData.email, authFormData.password);
+      setShowAuthForm(false);
+      setAuthFormData({ email: '', password: '', confirmPassword: '' });
+    } catch (error: any) {
+      setAuthError(error.message || 'Login failed');
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    if (authFormData.password !== authFormData.confirmPassword) {
+      setAuthError('Passwords do not match');
+      return;
+    }
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, authFormData.email, authFormData.password);
+      await addDoc(collection(db, "users"), {
+        uid: cred.user.uid,
+        email: authFormData.email,
+        role: 'vendor',
+        createdAt: new Date().toISOString()
+      });
+      setShowAuthForm(false);
+      setAuthFormData({ email: '', password: '', confirmPassword: '' });
+    } catch (error: any) {
+      setAuthError(error.message || 'Registration failed');
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    setUser(null);
+  };
+  
+  // --- DERIVED STATE & OTHER HANDLERS (omitted for brevity) ---
+
+  const dashboardStats = React.useMemo(() => {
+    const calcAvg = (type: string) => {
+      const filtered = vendors.filter(v => v.type === type);
+      return filtered.length > 0 ? filtered.reduce((sum, v) => sum + v.score, 0) / filtered.length : 0;
+    };
+    const warehouseAvg = calcAvg('Warehouse');
+    const transportAvg = calcAvg('Transport');
+    const trendData = [];
+    let lastWarehouse = warehouseAvg;
+    let lastTransport = transportAvg;
+    trendData.push({ name: 'Now', warehouse: warehouseAvg, transport: transportAvg });
+    for (let i = 1; i <= 3; i++) {
+        const whVar = lastWarehouse + (Math.random() * 6 - 3);
+        const trVar = lastTransport + (Math.random() * 6 - 3);
+        lastWarehouse = Math.max(75, Math.min(98, whVar));
+        lastTransport = Math.max(75, Math.min(98, trVar));
+        trendData.unshift({ name: `-${i}mo`, warehouse: lastWarehouse, transport: lastTransport });
+    }
+    return { warehouseAvg, transportAvg, trendData };
+  }, [vendors]);
+
+  const vendorNameForFilter = React.useMemo(() => {
+     if (user?.role === 'vendor' && user.vendorId) {
+        return vendors.find(v => v.id === user.vendorId)?.name || '';
+     }
+     return '';
+  }, [user, vendors]);
+
+  const handleAddVendor = () => {
+     const newId = `VN-${(vendors.length + 1).toString().padStart(3, '0')}`;
+     setVendorFormData({ id: newId, name: '', type: 'Warehouse', factory: 'Long An', contact: '', phone: '', email: '', score: 100, critical: false });
+     setActiveTab('vendors');
+     setSelectedVendor(null);
+     setShowVendorForm(true);
+  };
+
+  const handleEditVendor = (vendor: any) => {
+     setVendorFormData({ ...vendor });
+     setShowVendorForm(true);
+  };
+
+  const handleSaveVendor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!vendorFormData) return;
+
+    try {
+      if (vendorFormData.id.startsWith('VN-')) {
+        await updateDoc(doc(db, "vendors", vendorFormData.id), vendorFormData);
+      } else {
+        await addDoc(collection(db, "vendors"), vendorFormData);
+      }
+      
+      const vendorsCollection = collection(db, "vendors");
+      const vendorsSnapshot = await getDocs(vendorsCollection);
+      const vendorsList = vendorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setVendors(vendorsList);
+
+      setShowVendorForm(false);
+      setVendorFormData(null);
+      if (selectedVendor) setSelectedVendor(vendorFormData);
+    } catch (error) {
+      console.error("Error saving vendor: ", error);
+      alert("Error saving vendor.");
+    }
+  };
+
+  const handleAddCapa = () => {
+     setCapaFormData({ vendor: vendors[0]?.name || '', issue: '', rootCause: '', actionPlan: '', status: 'Open', priority: 'Medium', date: new Date().toISOString().split('T')[0] });
+     setActiveTab('capa');
+     setShowCapaForm(true);
+  };
+
+  const handleEditCapa = (capa: any) => {
+     setCapaFormData({ ...capa });
+     setShowCapaForm(true);
+  };
+
+  const handleSaveCapa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!capaFormData) return;
+
+    try {
+      if (capaFormData.id) {
+        await updateDoc(doc(db, "capas", capaFormData.id), capaFormData);
+      } else {
+        await addDoc(collection(db, "capas"), capaFormData);
+      }
+
+      const capasCollection = collection(db, "capas");
+      const capasSnapshot = await getDocs(capasCollection);
+      const capasList = capasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setCapas(capasList);
+
+      setShowCapaForm(false);
+      setCapaFormData(null);
+    } catch (error) {
+      console.error("Error saving CAPA: ", error);
+      alert("Error saving CAPA.");
+    }
+  };
+
+  const handleAddFactory = () => {
+    const newId = `FAC-${(factories.length + 1).toString().padStart(3, '0')}`;
+    setFactoryFormData({ id: newId, name: '', address: '', region: '', status: 'Active' });
+    setActiveTab('factories');
+    setSelectedFactory(null);
+    setShowFactoryForm(true);
+  };
+
+  const handleEditFactory = (factory: any) => {
+    setFactoryFormData({ ...factory });
+    setShowFactoryForm(true);
+  };
+
+  const handleSaveFactory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!factoryFormData) return;
+
+    try {
+      if (factoryFormData.id.startsWith('FAC-')) {
+        await updateDoc(doc(db, "factories", factoryFormData.id), factoryFormData);
+      } else {
+        await addDoc(collection(db, "factories"), factoryFormData);
+      }
+
+      const factoriesCollection = collection(db, "factories");
+      const factoriesSnapshot = await getDocs(factoriesCollection);
+      const factoriesList = factoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setFactories(factoriesList);
+
+      setShowFactoryForm(false);
+      setFactoryFormData(null);
+      if (selectedFactory) setSelectedFactory(factoryFormData);
+    } catch (error) {
+      console.error("Error saving factory: ", error);
+      alert("Error saving factory.");
+    }
+  };
+
+  const handleSaveConfig = async () => {
+       if (editingKpiData.reduce((s, i) => s + Number(i.weight), 0) !== 100) {
+           alert('Total weight must be 100%.');
+           return;
+       }
+       if (!editingType) return;
+       const collectionName = editingType === 'Transport' ? 'transportKpi' : 'warehouseKpi';
+       try {
+        for (const kpi of editingKpiData) {
+            const { id, ...kpiData } = kpi;
+            if (id.startsWith('new_')) {
+                await addDoc(collection(db, collectionName), kpiData);
+            } else {
+                await updateDoc(doc(db, collectionName, id), kpiData);
+            }
+        }
+        setIsEditingKpi(false);
+       } catch (error) {
+          console.error("Error saving KPI config: ", error);
+          alert("Error saving KPI config.");
+       }
+  };
+
+// --- RENDER (Public Admin Access) ---
+  
+  // --- RENDER METHODS FOR LOGGED-IN USER (No changes needed for these internal components)
+  const renderDashboard = () => {
+    const StatCard = ({ title, value, subtext }: {title:string, value:string, subtext:string}) => (
+        <Card className="p-8">
+            <Eyebrow>{title}</Eyebrow>
+            <div className="text-2xl font-bold my-3">{value}</div>
+            <p className="text-text-muted text-sm">{subtext}</p>
+        </Card>
+    );
+    return (
+      <div className="animate-in fade-in duration-500">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          <StatCard title="Warehouse Performance" value={`${dashboardStats.warehouseAvg.toFixed(1)}%`} subtext="Average score this month" />
+          <StatCard title="Transport Performance" value={`${dashboardStats.transportAvg.toFixed(1)}%`} subtext="Average score this month" />
+          <StatCard title="Grade A Vendors" value={`${vendors.filter(v => v.score >= 90).length}`} subtext={`of ${vendors.length} total vendors`} />
+          <StatCard title="Open CAPAs" value={`${capas.filter(c => c.status !== 'Resolved' && c.status !== 'Closed').length}`} subtext="Require corrective action" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
+          <Card className="lg:col-span-3 p-8 flex flex-col h-[350px]">
+            <Eyebrow>4-Month Performance Trend</Eyebrow>
+            <div className="flex-1 min-h-[300px] w-full mt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={dashboardStats.trendData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-line)" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: 'var(--color-text-muted)', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--color-text-muted)', fontSize: 12}} domain={[60, 100]} />
+                  <Tooltip cursor={{stroke: 'var(--color-line)'}} contentStyle={{ borderRadius: '20px', border: '1px solid var(--color-line)' }} />
+                  <Line type="monotone" dataKey="warehouse" name="Warehouse" stroke="var(--color-accent)" strokeWidth={3} dot={{r: 5}} />
+                  <Line type="monotone" dataKey="transport" name="Transport" stroke="var(--color-accent-alt)" strokeWidth={3} dot={{r: 5}} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+
+          <Card className="lg:col-span-2 p-8 flex flex-col h-[350px]">
+            <Eyebrow>Vendor Classification</Eyebrow>
+             <div className="flex-1 flex items-center justify-center">
+                <div className="w-40 h-40 rounded-full border-[20px] border-accent border-r-accent-alt border-b-text-muted relative">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                    <div className="text-3xl font-extrabold leading-none">{vendors.length}</div>
+                    <div className="text-sm font-bold text-text-muted uppercase tracking-widest">Vendors</div>
+                  </div>
+                </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                    <div className="font-bold text-lg">{vendors.length > 0 ? ((vendors.filter(v => v.score >= 90).length / vendors.length) * 100).toFixed(0) : 0}%</div>
+                    <div className="text-sm text-text-muted">Grade A</div>
+                </div>
+                 <div>
+                    <div className="font-bold text-lg">{vendors.length > 0 ? ((vendors.filter(v => v.score >= 80 && v.score < 90).length / vendors.length) * 100).toFixed(0) : 0}%</div>
+                    <div className="text-sm text-text-muted">Grade B</div>
+                </div>
+                 <div>
+                    <div className="font-bold text-lg">{vendors.length > 0 ? ((vendors.filter(v => v.score < 80).length / vendors.length) * 100).toFixed(0) : 0}%</div>
+                    <div className="text-sm text-text-muted">Grade C</div>
+                </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  };
+
+  const renderSLAInput = (type: 'Transport' | 'Warehouse') => {
+    const config = type === 'Transport' ? transportKpiConfig : warehouseKpiConfig;
+    const handleEditConfig = () => {
+       setEditingType(type);
+       setEditingKpiData(JSON.parse(JSON.stringify(config)));
+       setIsEditingKpi(true);
+    };
+    if (isEditingKpi && editingType === type) {
+       return (
+         <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
+           <button onClick={() => setIsEditingKpi(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-text-muted hover:text-text-main transition-colors">
+             <ChevronLeft size={16} /> Back to SLA Evaluation
+           </button>
+           <Card className="p-10">
+             <h2 className="text-xl font-bold tracking-tight m-0">KPI Criteria Configuration ({type})</h2>
+             <p className="text-text-muted mt-2 mb-8">Define the criteria and weights for SLA scoring. Total weight must equal 100%.</p>
+             <div className="space-y-4 mb-6">
+                {editingKpiData.map((item, index) => (
+                   <div key={item.id} className="flex flex-wrap gap-4 p-5 border border-line rounded-[24px] bg-bg items-center">
+                      <div className="flex-1 min-w-[200px]">
+                         <label className="block text-xs font-bold text-text-muted uppercase mb-1">Criteria Name</label>
+                         <input type="text" value={item.label} onChange={(e) => {
+                            const d = [...editingKpiData]; d[index].label = e.target.value; setEditingKpiData(d);
+                         }} className="w-full px-4 py-2 border border-line rounded-full text-sm font-semibold" />
+                      </div>
+                      <div className="w-24">
+                         <label className="block text-xs font-bold text-text-muted uppercase mb-1">Weight (%)</label>
+                         <input type="number" value={item.weight} onChange={(e) => {
+                            const d = [...editingKpiData]; d[index].weight = Number(e.target.value); setEditingKpiData(d);
+                         }} className="w-full px-4 py-2 border border-line rounded-full text-sm font-bold text-center" />
+                      </div>
+                      <div className="w-24">
+                         <label className="block text-xs font-bold text-text-muted uppercase mb-1">Target (%)</label>
+                         <input type="number" value={item.target} onChange={(e) => {
+                           const d = [...editingKpiData]; d[index].target = Number(e.target.value); setEditingKpiData(d);
+                         }} className="w-full px-4 py-2 border border-line rounded-full text-sm font-bold text-center" />
+                      </div>
+                      <div className="flex items-center gap-4 pt-5">
+                         <label className="flex items-center gap-2 cursor-pointer text-sm font-bold">
+                            <input type="checkbox" checked={item.critical} onChange={(e) => {
+                               const d = [...editingKpiData]; d[index].critical = e.target.checked; setEditingKpiData(d);
+                            }} className="w-5 h-5 cursor-pointer rounded-md" />
+                            Critical
+                         </label>
+                         <button onClick={() => setEditingKpiData(editingKpiData.filter((_, i) => i !== index))} className="text-text-muted hover:text-accent transition-colors">
+                            <X size={16} />
+                         </button>
+                      </div>
+                   </div>
+                ))}
+             </div>
+             <SecondaryButton onClick={() => setEditingKpiData([...editingKpiData, { id: `new_${Date.now()}`, label: 'New Criteria', weight: 0, target: 100, critical: false }])} className="w-full !border-dashed">
+                + Add New Criteria
+             </SecondaryButton>
+             <div className="flex justify-end gap-4 pt-8 mt-8 border-t border-line">
+                <SecondaryButton onClick={() => setIsEditingKpi(false)}>Cancel</SecondaryButton>
+                <PrimaryButton onClick={handleSaveConfig}>Save Configuration</PrimaryButton>
+             </div>
+           </Card>
+         </div>
+       );
+    }
+    return (
+      <div className="space-y-8 animate-in fade-in duration-500 max-w-4xl mx-auto">
+        <Card className="p-8">
+            <div className="flex justify-between items-start">
+                <div>
+                    <h3 className="text-xl font-bold tracking-tight">SLA Evaluation Form</h3>
+                    <p className="text-text-muted">Score vendors based on the pre-defined KPI criteria for <span className="font-bold text-text-main">{type}</span> services.</p>
+                </div>
+                <SecondaryButton onClick={handleEditConfig} className="flex-shrink-0">Edit Criteria</SecondaryButton>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-line">
+                <div>
+                    <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Select Vendor</label>
+                    <select className="w-full border border-line rounded-full px-5 py-3 text-base outline-none focus:border-text-main transition-colors bg-white appearance-none">
+                        {vendors.filter(v => v.type === type).map(v => <option key={v.id}>{v.name}</option>)}
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Evaluation Period</label>
+                     <input 
+                       type="month" 
+                       value={evaluationMonth}
+                       onChange={(e) => setEvaluationMonth(e.target.value)}
+                       className="w-full border border-line rounded-full px-5 py-3 text-base outline-none focus:border-text-main transition-colors bg-white"
+                     />
+                </div>
+            </div>
+        </Card>
+        <Card className="p-8">
+          <h3 className="text-xl font-bold tracking-tight mb-6">KPI Scoring</h3>
+          <div className="space-y-4">
+            {config.map((kpi) => (
+               <div key={kpi.id} className="flex flex-wrap justify-between items-center p-5 bg-bg rounded-[24px]">
+                   <div>
+                      <div className="flex items-center gap-3">
+                         <span className="text-base font-bold">{kpi.label}</span>
+                         {kpi.critical && <Badge text="Critical" color="orange" />}
+                      </div>
+                      <div className="text-sm text-text-muted mt-1">Weight: {kpi.weight}% • Target: {kpi.target}%</div>
+                   </div>
+                   <div className="flex items-center gap-4 mt-4 sm:mt-0">
+                       <div className="relative">
+                           <input type="number" defaultValue={100} className="w-28 px-4 py-2 border bg-white border-line rounded-full text-center text-lg font-bold outline-none" />
+                           <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-text-muted">%</span>
+                       </div>
+                   </div>
+               </div>
+            ))}
+          </div>
+        </Card>
+        <div className="mt-8 pt-8 border-t border-line flex justify-end gap-4">
+             <SecondaryButton onClick={() => window.print()}>Print / Save as PDF</SecondaryButton>
+             <PrimaryButton>Submit Score</PrimaryButton>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderVendorManagement = () => {
+    const getGrade = (score: number) => score >= 90 ? 'A' : score >= 80 ? 'B' : 'C';
+    if (showVendorForm) {
+      return (
+         <div className="animate-in fade-in duration-500 max-w-3xl mx-auto">
+           <button onClick={() => setShowVendorForm(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-text-muted hover:text-text-main transition-colors">
+             <ChevronLeft size={16} /> Back to Vendor List
+           </button>
+           <Card className="p-10">
+             <h2 className="text-xl font-bold tracking-tight">{selectedVendor ? 'Edit Vendor' : 'Add New Vendor'}</h2>
+             <form onSubmit={handleSaveVendor} className="space-y-6 mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <div>
+                     <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Vendor ID</label>
+                     <input required type="text" value={vendorFormData?.id || ''} disabled className="w-full border border-line rounded-full px-5 py-3 bg-bg/50 outline-none opacity-60" />
+                   </div>
+                   <div>
+                     <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Vendor Name</label>
+                     <input required type="text" value={vendorFormData?.name || ''} onChange={(e) => setVendorFormData({...vendorFormData, name: e.target.value})} className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main" />
+                   </div>
+                   <div>
+                     <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Service Type</label>
+                     <select value={vendorFormData?.type || 'Warehouse'} onChange={(e) => setVendorFormData({...vendorFormData, type: e.target.value})} className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main appearance-none">
+                        <option value="Warehouse">Warehouse</option>
+                        <option value="Transport">Transport</option>
+                     </select>
+                   </div>
+                   <div>
+                     <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Factory</label>
+                     <select value={vendorFormData?.factory || 'Long An'} onChange={(e) => setVendorFormData({...vendorFormData, factory: e.target.value})} className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main appearance-none">
+                        {factories.map(f => <option key={f.id} value={f.name}>{f.name}</option>)}
+                     </select>
+                   </div>
+                   <div>
+                     <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Contact Person</label>
+                     <input required type="text" value={vendorFormData?.contact || ''} onChange={(e) => setVendorFormData({...vendorFormData, contact: e.target.value})} className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main" />
+                   </div>
+                   <div>
+                     <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Phone</label>
+                     <input required type="text" value={vendorFormData?.phone || ''} onChange={(e) => setVendorFormData({...vendorFormData, phone: e.target.value})} className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main" />
+                   </div>
+                   <div className="md:col-span-2">
+                     <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Email</label>
+                     <input required type="email" value={vendorFormData?.email || ''} onChange={(e) => setVendorFormData({...vendorFormData, email: e.target.value})} className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main" />
+                   </div>
+                </div>
+                <div className="flex justify-end gap-4 pt-6 border-t border-line mt-6">
+                   <SecondaryButton type="button" onClick={() => setShowVendorForm(false)}>Cancel</SecondaryButton>
+                   <PrimaryButton type="submit">Save Vendor</PrimaryButton>
+                </div>
+             </form>
+           </Card>
+        </div>
+      );
+    }
+    if (selectedVendor) {
+      return (
+        <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
+          <button onClick={() => setSelectedVendor(null)} className="mb-8 flex items-center gap-2 text-sm font-bold text-text-muted hover:text-text-main transition-colors">
+             <ChevronLeft size={16} /> Back to List
+          </button>
+          <Card className="p-10">
+            <div className="flex justify-between items-start">
+               <div>
+                    <div className="flex items-center gap-4 mb-2">
+                        <h2 className="text-2xl font-bold m-0 tracking-tight">{selectedVendor.name}</h2>
+                        {selectedVendor.critical && <Badge text="Critical" color="orange"/>}
+                    </div>
+                    <Eyebrow>{selectedVendor.id}</Eyebrow>
+               </div>
+               <SecondaryButton onClick={() => handleEditVendor(selectedVendor)}>Edit</SecondaryButton>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 pt-8 border-t border-line">
+                <div><Eyebrow>Service Type</Eyebrow><div className="text-lg font-semibold mt-1">{selectedVendor.type}</div></div>
+                <div><Eyebrow>Factory</Eyebrow><div className="text-lg font-semibold mt-1">{selectedVendor.factory}</div></div>
+                <div><Eyebrow>Current Score</Eyebrow><div className="text-2xl font-bold mt-1">{selectedVendor.score.toFixed(1)}%</div></div>
+                <div><Eyebrow>Contact Person</Eyebrow><div className="text-lg font-semibold mt-1">{selectedVendor.contact}</div></div>
+                <div><Eyebrow>Phone</Eyebrow><div className="text-lg font-semibold mt-1">{selectedVendor.phone}</div></div>
+                <div><Eyebrow>Email</Eyebrow><div className="text-lg font-semibold text-accent-alt hover:underline cursor-pointer mt-1">{selectedVendor.email}</div></div>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+    const filteredVendors = vendors.filter(v => 
+      (vendorFilterType === 'All' || v.type === vendorFilterType) &&
+      (v.name.toLowerCase().includes(vendorSearch.toLowerCase()) || v.id.toLowerCase().includes(vendorSearch.toLowerCase()))
+    );
+    return (
+      <div className="space-y-6 animate-in fade-in duration-500">
+         <div className="flex flex-col sm:flex-row gap-4 mb-2">
+            <div className="relative flex-1">
+               <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+               <input 
+                 type="text" 
+                 placeholder="Search vendors by name or ID..." 
+                 className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-full text-base font-semibold outline-none focus:border-line shadow-sm transition-colors"
+                 value={vendorSearch}
+                 onChange={(e) => setVendorSearch(e.target.value)}
+               />
+            </div>
+            <select 
+              className="px-6 py-4 bg-white border-2 border-transparent rounded-full text-base font-bold text-text-main outline-none cursor-pointer shadow-sm appearance-none"
+              value={vendorFilterType}
+              onChange={(e) => setVendorFilterType(e.target.value)}
+            >
+              <option value="All">All Services</option>
+              <option value="Warehouse">Warehouse</option>
+              <option value="Transport">Transport</option>
+            </select>
+         </div>
+         <Card className="overflow-hidden">
+            <table className="w-full text-left">
+              <thead className="bg-white">
+                <tr>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Vendor</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Service</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Factory</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Score</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Grade</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredVendors.map((item) => (
+                  <tr key={item.id} className="hover:bg-bg cursor-pointer transition-colors group border-t border-line" onClick={() => setSelectedVendor(item)}>
+                    <td className="py-5 px-6">
+                      <div className="font-bold text-base text-text-main group-hover:text-accent-alt transition-colors">{item.name}</div>
+                      <div className="text-sm text-text-muted font-mono">{item.id}</div>
+                    </td>
+                    <td className="py-5 px-6 text-base font-semibold">{item.type}</td>
+                    <td className="py-5 px-6 text-base font-semibold">{item.factory}</td>
+                    <td className="py-5 px-6 text-lg font-bold">{item.score.toFixed(1)}%</td>
+                    <td className="py-5 px-6"><Badge text={`Grade ${getGrade(item.score)}`} color={item.critical ? 'orange' : 'gray'} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filteredVendors.length === 0 && (
+              <div className="p-20 text-center">
+                 <FileText className="w-12 h-12 text-line mx-auto mb-4" />
+                 <p className="text-text-main font-bold text-lg">No vendors found.</p>
+                 <p className="text-text-muted text-base mt-2">Try adjusting your search or filters.</p>
+              </div>
+            )}
+         </Card>
+      </div>
+    );
+  };
+
+  const renderFactoryManagement = () => {
+    if (showFactoryForm) {
+      return (
+        <div className="animate-in fade-in duration-500 max-w-3xl mx-auto">
+          <button onClick={() => setShowFactoryForm(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-text-muted hover:text-text-main transition-colors">
+            <ChevronLeft size={16} /> Back to Factory List
+          </button>
+          <Card className="p-10">
+            <h2 className="text-xl font-bold tracking-tight">{selectedFactory ? 'Edit Factory' : 'Add New Factory'}</h2>
+            <form onSubmit={handleSaveFactory} className="space-y-6 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Factory ID</label>
+                  <input required type="text" value={factoryFormData?.id || ''} disabled className="w-full border border-line rounded-full px-5 py-3 bg-bg/50 outline-none opacity-60" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Factory Name</label>
+                  <input required type="text" value={factoryFormData?.name || ''} onChange={(e) => setFactoryFormData({...factoryFormData, name: e.target.value})} className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Region</label>
+                  <select value={factoryFormData?.region || 'Long An'} onChange={(e) => setFactoryFormData({...factoryFormData, region: e.target.value})} className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main appearance-none">
+                    <option value="Long An">Long An</option>
+                    <option value="Ho Chi Minh">Ho Chi Minh</option>
+                    <option value="Binh Duong">Binh Duong</option>
+                    <option value="Dong Nai">Dong Nai</option>
+                    <option value="Tay Ninh">Tay Ninh</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Status</label>
+                  <select value={factoryFormData?.status || 'Active'} onChange={(e) => setFactoryFormData({...factoryFormData, status: e.target.value})} className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main appearance-none">
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Address</label>
+                  <textarea required value={factoryFormData?.address || ''} onChange={(e) => setFactoryFormData({...factoryFormData, address: e.target.value})} className="w-full border border-line rounded-2xl px-5 py-3 bg-white outline-none focus:border-text-main" rows={2} />
+                </div>
+              </div>
+              <div className="flex justify-end gap-4 pt-6 border-t border-line mt-6">
+                <SecondaryButton type="button" onClick={() => setShowFactoryForm(false)}>Cancel</SecondaryButton>
+                <PrimaryButton type="submit">Save Factory</PrimaryButton>
+              </div>
+            </form>
+          </Card>
+        </div>
+      );
+    }
+    if (selectedFactory) {
+      return (
+        <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
+          <button onClick={() => setSelectedFactory(null)} className="mb-8 flex items-center gap-2 text-sm font-bold text-text-muted hover:text-text-main transition-colors">
+            <ChevronLeft size={16} /> Back to List
+          </button>
+          <Card className="p-10">
+            <div className="flex justify-between items-start">
+              <div>
+                <div className="flex items-center gap-4 mb-2">
+                  <h2 className="text-2xl font-bold m-0 tracking-tight">{selectedFactory.name}</h2>
+                  <Badge text={selectedFactory.status} color={selectedFactory.status === 'Active' ? 'gray' : 'orange'} />
+                </div>
+                <Eyebrow>{selectedFactory.id}</Eyebrow>
+              </div>
+              <SecondaryButton onClick={() => handleEditFactory(selectedFactory)}>Edit</SecondaryButton>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 pt-8 border-t border-line">
+              <div><Eyebrow>Region</Eyebrow><div className="text-lg font-semibold mt-1">{selectedFactory.region}</div></div>
+              <div className="md:col-span-2"><Eyebrow>Address</Eyebrow><div className="text-lg font-semibold mt-1">{selectedFactory.address}</div></div>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+    const filteredFactories = factories.filter(f => 
+      f.name.toLowerCase().includes(factorySearch.toLowerCase()) || 
+      f.id.toLowerCase().includes(factorySearch.toLowerCase()) ||
+      f.region.toLowerCase().includes(factorySearch.toLowerCase())
+    );
+    return (
+      <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="relative flex-1">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+          <input 
+            type="text" 
+            placeholder="Search factories by name, ID, or region..." 
+            className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-full text-base font-semibold outline-none focus:border-line shadow-sm transition-colors"
+            value={factorySearch}
+            onChange={(e) => setFactorySearch(e.target.value)}
+          />
+        </div>
+        <Card className="overflow-hidden">
+          <table className="w-full text-left">
+            <thead className="bg-white">
+              <tr>
+                <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Factory</th>
+                <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Region</th>
+                <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Address</th>
+                <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredFactories.map((item) => (
+                <tr key={item.id} className="hover:bg-bg cursor-pointer transition-colors group border-t border-line" onClick={() => setSelectedFactory(item)}>
+                  <td className="py-5 px-6">
+                    <div className="font-bold text-base text-text-main group-hover:text-accent-alt transition-colors">{item.name}</div>
+                    <div className="text-sm text-text-muted font-mono">{item.id}</div>
+                  </td>
+                  <td className="py-5 px-6 text-base font-semibold">{item.region}</td>
+                  <td className="py-5 px-6 text-base text-text-muted max-w-xs truncate">{item.address}</td>
+                  <td className="py-5 px-6"><Badge text={item.status} color={item.status === 'Active' ? 'gray' : 'orange'} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filteredFactories.length === 0 && (
+            <div className="p-20 text-center">
+              <FileText className="w-12 h-12 text-line mx-auto mb-4" />
+              <p className="text-text-main font-bold text-lg">No factories found.</p>
+              <p className="text-text-muted text-base mt-2">Try adjusting your search or add a new factory.</p>
+            </div>
+          )}
+        </Card>
+      </div>
+    );
+  };
+  
+  const renderCapaManagement = () => {
+    const PRIORITY_COLOR: Record<string, 'orange' | 'yellow' | 'gray'> = { 'High': 'orange', 'Medium': 'yellow', 'Low': 'gray' };
+    const STATUS_COLOR: Record<string, 'gray' | 'yellow'> = { 'Open': 'yellow', 'In Progress': 'yellow', 'Resolved': 'gray', 'Closed': 'gray' };
+    if (showCapaForm) {
+      return (
+        <div className="animate-in fade-in duration-500 max-w-3xl mx-auto">
+          <button onClick={() => setShowCapaForm(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-text-muted hover:text-text-main transition-colors">
+            <ChevronLeft size={16} /> Back to CAPA List
+          </button>
+          <Card className="p-10">
+            <h2 className="text-xl font-bold tracking-tight">{capaFormData?.id ? 'Edit CAPA Report' : 'Add New CAPA Report'}</h2>
+            <form onSubmit={handleSaveCapa} className="space-y-6 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Vendor</label>
+                  <select
+                    required
+                    value={capaFormData?.vendor || ''}
+                    onChange={(e) => setCapaFormData({ ...capaFormData, vendor: e.target.value })}
+                    className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main appearance-none"
+                  >
+                    {vendors.map(v => <option key={v.id} value={v.name}>{v.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Date</label>
+                  <input
+                    required
+                    type="date"
+                    value={capaFormData?.date || ''}
+                    onChange={(e) => setCapaFormData({ ...capaFormData, date: e.target.value })}
+                    className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Issue</label>
+                  <textarea
+                    required
+                    value={capaFormData?.issue || ''}
+                    onChange={(e) => setCapaFormData({ ...capaFormData, issue: e.target.value })}
+                    className="w-full border border-line rounded-2xl px-5 py-3 bg-white outline-none focus:border-text-main"
+                    rows={3}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Root Cause</label>
+                  <textarea
+                    required
+                    value={capaFormData?.rootCause || ''}
+                    onChange={(e) => setCapaFormData({ ...capaFormData, rootCause: e.target.value })}
+                    className="w-full border border-line rounded-2xl px-5 py-3 bg-white outline-none focus:border-text-main"
+                    rows={3}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Action Plan</label>
+                  <textarea
+                    required
+                    value={capaFormData?.actionPlan || ''}
+                    onChange={(e) => setCapaFormData({ ...capaFormData, actionPlan: e.target.value })}
+                    className="w-full border border-line rounded-2xl px-5 py-3 bg-white outline-none focus:border-text-main"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Priority</label>
+                  <select
+                    required
+                    value={capaFormData?.priority || 'Medium'}
+                    onChange={(e) => setCapaFormData({ ...capaFormData, priority: e.target.value })}
+                    className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main appearance-none"
+                  >
+                    <option>Low</option>
+                    <option>Medium</option>
+                    <option>High</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-4">Status</label>
+                  <select
+                    required
+                    value={capaFormData?.status || 'Open'}
+                    onChange={(e) => setCapaFormData({ ...capaFormData, status: e.target.value })}
+                    className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main appearance-none"
+                  >
+                    <option>Open</option>
+                    <option>In Progress</option>
+                    <option>Resolved</option>
+                    <option>Closed</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-4 pt-6 border-t border-line mt-6">
+                <SecondaryButton type="button" onClick={() => setShowCapaForm(false)}>Cancel</SecondaryButton>
+                <PrimaryButton type="submit">Save CAPA</PrimaryButton>
+              </div>
+            </form>
+          </Card>
+        </div>
+      );
+    }
+    const baseCapas = user?.role === 'vendor' ? capas.filter(c => c.vendor === vendorNameForFilter) : capas;
+    const filteredCapas = baseCapas.filter(c => c.issue.toLowerCase().includes(capaSearch.toLowerCase()) || (c.id && c.id.toLowerCase().includes(capaSearch.toLowerCase())) || c.vendor.toLowerCase().includes(capaSearch.toLowerCase()));
+    const sortedCapas = [...filteredCapas].sort((a,b) => (a.date < b.date) ? 1 : -1 );
+    return (
+      <div className="space-y-6 animate-in fade-in duration-500">
+         <div className="relative flex-1">
+           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+           <input 
+             type="text" 
+             placeholder="Search CAPAs by ID, issue, or vendor..." 
+             className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-full text-base font-semibold outline-none focus:border-line shadow-sm transition-colors"
+             value={capaSearch}
+             onChange={(e) => setCapaSearch(e.target.value)}
+           />
+        </div>
+         <Card className="overflow-hidden">
+            <table className="w-full text-left">
+              <thead>
+                <tr>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">CAPA ID</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Date</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Vendor</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Issue</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Priority</th>
+                  <th className="py-4 px-6 text-sm font-bold uppercase text-text-muted tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedCapas.map((item) => (
+                  <tr key={item.id} className={`border-t border-line transition-colors ${user?.role === 'admin' ? 'hover:bg-bg cursor-pointer group' : ''}`} onClick={() => { if(user?.role === 'admin') handleEditCapa(item) }}>
+                    <td className="py-5 px-6 font-mono text-sm">{item.id}</td>
+                    <td className="py-5 px-6 text-text-muted text-sm">{item.date}</td>
+                    <td className="py-5 px-6 font-semibold" title={item.vendor}>{item.vendor}</td>
+                    <td className="py-5 px-6 text-text-main max-w-xs truncate" title={item.issue}>{item.issue}</td>
+                    <td className="py-5 px-6"><Badge text={item.priority} color={PRIORITY_COLOR[item.priority]}/></td>
+                    <td className="py-5 px-6"><Badge text={item.status} color={STATUS_COLOR[item.status]} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {sortedCapas.length === 0 && (
+              <div className="p-20 text-center">
+                 <FileText className="w-12 h-12 text-line mx-auto mb-4" />
+                 <p className="text-text-main font-bold text-lg">No CAPAs found.</p>
+                 <p className="text-text-muted text-base mt-2">No corrective actions match your current search.</p>
+              </div>
+            )}
+         </Card>
+      </div>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-bg">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-text-muted font-bold">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const renderAuthForm = () => (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <Card className="p-10 max-w-md w-full mx-4">
+        <div className="text-center mb-8">
+          <BrandLogo />
+        </div>
+        <h2 className="text-xl font-bold text-center tracking-tight">
+          {authMode === 'login' ? 'Welcome Back' : 'Create Account'}
+        </h2>
+        <p className="text-text-muted text-center mt-2 mb-6">
+          {authMode === 'login' ? 'Sign in to continue' : 'Register to access the system'}
+        </p>
+        <form onSubmit={authMode === 'login' ? handleLogin : handleRegister} className="space-y-4">
+          <div>
+            <input
+              type="email"
+              placeholder="Email"
+              required
+              value={authFormData.email}
+              onChange={(e) => setAuthFormData({...authFormData, email: e.target.value})}
+              className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main"
+            />
+          </div>
+          <div>
+            <input
+              type="password"
+              placeholder="Password"
+              required
+              value={authFormData.password}
+              onChange={(e) => setAuthFormData({...authFormData, password: e.target.value})}
+              className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main"
+            />
+          </div>
+          {authMode === 'register' && (
+            <div>
+              <input
+                type="password"
+                placeholder="Confirm Password"
+                required
+                value={authFormData.confirmPassword}
+                onChange={(e) => setAuthFormData({...authFormData, confirmPassword: e.target.value})}
+                className="w-full border border-line rounded-full px-5 py-3 bg-white outline-none focus:border-text-main"
+              />
+            </div>
+          )}
+          {authError && <p className="text-accent text-sm text-center">{authError}</p>}
+          <PrimaryButton type="submit" className="w-full">
+            {authMode === 'login' ? 'Sign In' : 'Sign Up'}
+          </PrimaryButton>
+        </form>
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => { setAuthMode(authMode === 'login' ? 'register' : 'login'); setAuthError(''); }}
+            className="text-sm font-bold text-text-muted hover:text-accent-alt"
+          >
+            {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+          </button>
+        </div>
+      </Card>
+    </div>
+  );
+
+  if (!user) {
+    return renderAuthForm();
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+    <div className="flex h-screen w-full overflow-hidden bg-bg text-text-main font-sans print:h-auto print:overflow-visible print:bg-white">
+      <aside className={`bg-sidebar text-white p-6 flex flex-col h-full flex-shrink-0 print:hidden transition-all duration-300 ease-in-out relative ${isSidebarCollapsed ? 'w-[104px] items-center' : 'w-[280px]'}`}>
+        <button 
+          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+          className="absolute -right-4 top-10 w-8 h-8 bg-card border border-line rounded-full flex items-center justify-center text-text-muted hover:text-text-main shadow-md cursor-pointer transition-all z-10"
         >
-          Count is {count}
+          {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
-      </section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        <div className={`mb-12 w-full ${isSidebarCollapsed ? 'mx-auto' : ''}`}>
+          <BrandLogo isPill={isSidebarCollapsed} isLight={true}/>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+        
+        <nav className="flex-1 w-full flex flex-col gap-2">
+          {user.role === 'admin' ? (
+            <>
+              {[ {tab: 'dashboard', label: 'Dashboard', icon: LayoutDashboard}, {tab: 'transport_sla', label: 'Transport SLA', icon: Truck}, {tab: 'warehouse_sla', label: 'Warehouse SLA', icon: Warehouse}, {tab: 'vendors', label: 'Vendors', icon: Users}, {tab: 'factories', label: 'Factories', icon: MapPin}, {tab: 'capa', label: 'CAPA Reports', icon: FileText} ].map(item => (
+                <button 
+                  key={item.tab}
+                  onClick={() => setActiveTab(item.tab)} 
+                  title={isSidebarCollapsed ? item.label : ""}
+                  className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-full text-sm font-bold transition-colors ${activeTab === item.tab ? 'bg-white text-text-main' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
+                   <item.icon size={20} /> 
+                   {!isSidebarCollapsed && <span>{item.label}</span>}
+                </button>
+              ))}
+            </>
+          ) : (
+            <> 
+              {[ {tab: 'my_profile', label: 'My SLA Score', icon: LayoutDashboard}, {tab: 'my_capa', label: 'My CAPA Reports', icon: FileText}, ].map(item => (
+                <button 
+                  key={item.tab} 
+                  onClick={() => setActiveTab(item.tab)} 
+                  title={isSidebarCollapsed ? item.label : ""}
+                  className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-full text-sm font-bold transition-colors ${activeTab === item.tab ? 'bg-white text-text-main' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
+                   <item.icon size={20} /> 
+                   {!isSidebarCollapsed && <span>{item.label}</span>}
+                </button>
+              ))}
+            </>
+          )}
+        </nav>
+        
+        <div className="mt-auto pt-4 border-t border-white/10">
+          <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : 'px-4'} mb-2`}>
+            <div className="w-8 h-8 rounded-full bg-accent-alt flex items-center justify-center text-white font-bold text-sm">
+              {user.email?.[0].toUpperCase()}
+            </div>
+            {!isSidebarCollapsed && (
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold truncate">{user.email}</div>
+                <div className="text-xs text-gray-400 capitalize">{user.role}</div>
+              </div>
+            )}
+          </div>
+          <button 
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-12' : 'px-4 h-10'} rounded-full text-sm font-bold text-gray-400 hover:bg-white/10 hover:text-white transition-colors`}
+          >
+            <LogOut size={20} />
+            {!isSidebarCollapsed && <span>Logout</span>}
+          </button>
         </div>
-      </section>
+      </aside>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <main className="flex-1 p-10 h-full overflow-y-auto w-full print:p-0 print:overflow-visible">
+        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-10 print:hidden">
+           <div>
+             <Eyebrow>{activeTab.replace('_', ' ').replace('sla', 'SLA')}</Eyebrow>
+<h1 className="text-3xl font-bold m-0 tracking-tighter mt-2">
+                {activeTab === 'dashboard' ? 'Performance Insights' : 
+                 activeTab === 'vendors' ? 'Vendor Network' : 
+                 activeTab === 'factories' ? 'Factory Network' :
+                 activeTab.includes('capa') ? 'Corrective Actions' : 
+                 activeTab === 'my_profile' ? 'My SLA Score' : 'SLA Evaluation'}
+              </h1>
+           </div>
+           
+{user.role === 'admin' && (
+              <div className="flex gap-4 flex-shrink-0">
+                <PrimaryButton onClick={activeTab === 'factories' ? handleAddFactory : activeTab.includes('capa') ? handleAddCapa : handleAddVendor}>
+                  <Plus size={16} className="inline -ml-2 mr-2"/>
+                  {activeTab === 'factories' ? 'New Factory' : activeTab.includes('capa') ? 'New CAPA' : 'New Vendor'}
+                </PrimaryButton>
+              </div>
+            )}
+        </header>
+
+        {activeTab === 'dashboard' && renderDashboard()}
+        {activeTab === 'transport_sla' && renderSLAInput('Transport')}
+        {activeTab === 'warehouse_sla' && renderSLAInput('Warehouse')}
+        {activeTab === 'my_profile' && (() => {
+            const v = vendors.find(v => v.id === user.vendorId);
+            if (user.isNew) {
+              return (
+                <div className="text-center p-8 animate-in fade-in duration-500">
+                  <Card className="max-w-lg mx-auto p-10">
+                    <Users className="w-12 h-12 text-line mx-auto mb-4" />
+                    <h2 className="text-xl font-bold">Chào mừng bạn!</h2>
+                    <p className="text-text-muted mt-2">Tài khoản của bạn đã được tạo thành công. Tuy nhiên, hồ sơ nhà cung cấp của bạn chưa được thiết lập.</p>
+                    <p className="text-text-muted mt-2">Vui lòng liên hệ với quản trị viên để hoàn tất việc cài đặt và gán bạn vào một nhà cung cấp cụ thể.</p>
+                  </Card>
+                </div>
+              );
+            }
+            if (!v) return <div className="text-center p-8">Error: Could not find your vendor profile. Please contact an admin.</div>;
+            return (
+              <div className="animate-in fade-in duration-500 max-w-4xl mx-auto">
+                 <Card className="p-10">
+                    <div className="flex justify-between items-start">
+                       <div>
+                            <div className="flex items-center gap-4 mb-2">
+                                <h2 className="text-2xl font-bold m-0 tracking-tight">{v.name}</h2>
+                                {v.critical && <Badge text="Critical Account" color="orange"/>}
+                            </div>
+                            <Eyebrow>{v.id}</Eyebrow>
+                       </div>
+                       <div className="text-right">
+                           <div className="text-sm text-text-muted">Current Score</div>
+                           <div className="text-3xl font-bold text-accent">{v.score.toFixed(1)}%</div>
+                       </div>
+                    </div>
+                </Card>
+              </div>
+            );
+        })()}
+        {activeTab === 'my_capa' && renderCapaManagement()}
+        {activeTab === 'vendors' && renderVendorManagement()}
+        {activeTab === 'factories' && renderFactoryManagement()}
+        {activeTab === 'capa' && renderCapaManagement()}
+      </main>
+    </div>
+  );
 }
-
-export default App
