@@ -4,7 +4,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, getDoc } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 import {
-  Truck, Warehouse, Users, Search, Plus, LayoutDashboard, FileText, ChevronLeft, ChevronRight, X, MapPin, LogOut
+  Truck, Warehouse, Users, Search, Plus, LayoutDashboard, FileText, ChevronLeft, ChevronRight, X, MapPin, LogOut, CheckCircle, AlertCircle
 } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -23,14 +23,14 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// --- REDESIGNED COMPONENTS (Mastercard Design System) ---
+// --- REDESIGNED COMPONENTS ---
 
 const Card = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <div className={`bg-lifted-cream border border-dust-taupe rounded-[40px] shadow-halo p-6 ${className}`}>{children}</div>
+  <div className={`bg-lifted-cream border border-dust-taupe rounded-3xl shadow-halo ${className}`}>{children}</div>
 );
 const Eyebrow = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
   <div className={`flex items-center gap-2 text-sm font-bold text-slate-gray uppercase tracking-widest ${className}`}>
-    <div className="w-1.5 h-1.5 rounded-full bg-light-signal-orange"></div>
+    <div className="w-1.5 h-1.5 rounded-pill bg-light-signal-orange"></div>
     {children}
   </div>
 );
@@ -41,15 +41,15 @@ const Badge = ({ text, color = 'gray' }: { text: string; color?: 'gray' | 'orang
     red: 'border-mastercard-red text-mastercard-red',
     yellow: 'border-mastercard-yellow text-mastercard-yellow',
   };
-  return <span className={`px-3 py-1 text-xs font-bold rounded-full border ${colorClasses[color]}`}>{text}</span>;
+  return <span className={`px-3 py-1 text-xs font-bold rounded-pill border ${colorClasses[color]}`}>{text}</span>;
 };
 const PrimaryButton = ({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button {...props} className={`px-6 py-3 bg-ink-black text-canvas-cream rounded-[20px] font-medium text-base tracking-tightest hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
+  <button {...props} className={`px-6 py-3 bg-ink-black text-canvas-cream rounded-xl font-medium text-base tracking-tightest hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
     {children}
   </button>
 );
 const SecondaryButton = ({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button {...props} className={`px-6 py-3 bg-white border border-ink-black text-ink-black rounded-[20px] font-normal text-base tracking-tightest hover:bg-soft-bone transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
+  <button {...props} className={`px-6 py-3 bg-white border border-ink-black text-ink-black rounded-xl font-normal text-base tracking-tightest hover:bg-soft-bone transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
     {children}
   </button>
 );
@@ -66,10 +66,26 @@ const BrandLogo = ({isPill = false, isLight = false}) => (
         )}
     </div>
 );
+const Dialog = ({ title, message, onClose, type = 'success' }: { title: string, message: string, onClose: () => void, type?: 'success' | 'error' }) => {
+  const Icon = type === 'success' ? CheckCircle : AlertCircle;
+  const color = type === 'success' ? 'text-green-500' : 'text-signal-orange';
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-in fade-in duration-300">
+      <Card className="p-10 max-w-md w-full mx-4 text-center">
+        <Icon className={`w-16 h-16 ${color} mx-auto mb-4`} />
+        <h2 className={`text-2xl font-bold tracking-tight text-ink-black`}>{title}</h2>
+        <p className="text-slate-gray mt-2 mb-8 text-base">{message}</p>
+        <PrimaryButton onClick={onClose} className="w-full">Close</PrimaryButton>
+      </Card>
+    </div>
+  );
+};
+
 
 // --- MAIN APP ---
 export default function App() {
-  // Core State - Public Access (mock admin)
+  // Core State
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -98,6 +114,7 @@ export default function App() {
   const [showFactoryForm, setShowFactoryForm] = useState(false);
   const [factoryFormData, setFactoryFormData] = useState<any>(null);
   const [factorySearch, setFactorySearch] = useState('');
+  const [dialogState, setDialogState] = useState<{ isOpen: boolean; title: string; message: string; type: 'success' | 'error' } | null>(null);
 
   // Auth State
   const [isLoading, setIsLoading] = useState(true);
@@ -189,8 +206,6 @@ const handleLogin = async (e: React.FormEvent) => {
     await signOut(auth);
     setUser(null);
   };
-  
-  // --- DERIVED STATE & OTHER HANDLERS (omitted for brevity) ---
 
   const dashboardStats = React.useMemo(() => {
     const calcAvg = (type: string) => {
@@ -252,9 +267,10 @@ const handleLogin = async (e: React.FormEvent) => {
       setShowVendorForm(false);
       setVendorFormData(null);
       if (selectedVendor) setSelectedVendor(vendorFormData);
+      setDialogState({ isOpen: true, title: 'Success', message: 'Vendor has been saved successfully.', type: 'success' });
     } catch (error) {
       console.error("Error saving vendor: ", error);
-      alert("Error saving vendor.");
+      setDialogState({ isOpen: true, title: 'Error', message: 'Failed to save vendor. Please try again.', type: 'error' });
     }
   };
 
@@ -287,9 +303,10 @@ const handleLogin = async (e: React.FormEvent) => {
 
       setShowCapaForm(false);
       setCapaFormData(null);
+      setDialogState({ isOpen: true, title: 'Success', message: 'CAPA report has been saved successfully.', type: 'success' });
     } catch (error) {
       console.error("Error saving CAPA: ", error);
-      alert("Error saving CAPA.");
+      setDialogState({ isOpen: true, title: 'Error', message: 'Failed to save CAPA report. Please try again.', type: 'error' });
     }
   };
 
@@ -325,15 +342,16 @@ const handleLogin = async (e: React.FormEvent) => {
       setShowFactoryForm(false);
       setFactoryFormData(null);
       if (selectedFactory) setSelectedFactory(factoryFormData);
+       setDialogState({ isOpen: true, title: 'Success', message: 'Factory has been saved successfully.', type: 'success' });
     } catch (error) {
       console.error("Error saving factory: ", error);
-      alert("Error saving factory.");
+      setDialogState({ isOpen: true, title: 'Error', message: 'Failed to save factory. Please try again.', type: 'error' });
     }
   };
 
   const handleSaveConfig = async () => {
        if (editingKpiData.reduce((s, i) => s + Number(i.weight), 0) !== 100) {
-           alert('Total weight must be 100%.');
+            setDialogState({ isOpen: true, title: 'Invalid Weight', message: 'Total weight for all criteria must be exactly 100%.', type: 'error' });
            return;
        }
        if (!editingType) return;
@@ -348,15 +366,14 @@ const handleLogin = async (e: React.FormEvent) => {
             }
         }
         setIsEditingKpi(false);
+        setDialogState({ isOpen: true, title: 'Success', message: 'KPI configuration has been saved successfully.', type: 'success' });
        } catch (error) {
           console.error("Error saving KPI config: ", error);
-          alert("Error saving KPI config.");
+          setDialogState({ isOpen: true, title: 'Error', message: 'Failed to save KPI configuration. Please try again.', type: 'error' });
        }
   };
 
-// --- RENDER (Public Admin Access) ---
-  
-  // --- RENDER METHODS FOR LOGGED-IN USER (No changes needed for these internal components)
+// --- RENDER METHODS ---
   const renderDashboard = () => {
     const StatCard = ({ title, value, subtext }: {title:string, value:string, subtext:string}) => (
         <Card className="p-8">
@@ -983,7 +1000,7 @@ return (
   }
 
   const renderAuthForm = () => (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
       <Card className="p-10 max-w-md w-full mx-4">
         <div className="text-center mb-8">
           <BrandLogo />
@@ -1050,6 +1067,14 @@ return (
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-canvas-cream text-ink-black font-sans print:h-auto print:overflow-visible print:bg-white">
+       {dialogState?.isOpen && (
+        <Dialog
+          title={dialogState.title}
+          message={dialogState.message}
+          type={dialogState.type}
+          onClose={() => setDialogState(null)}
+        />
+      )}
       <aside className={`bg-ink-black text-white p-6 flex flex-col h-full flex-shrink-0 print:hidden transition-all duration-300 ease-in-out relative ${isSidebarCollapsed ? 'w-[104px] items-center' : 'w-[280px]'}`}>
         <button 
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
