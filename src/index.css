@@ -1,31 +1,59 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Sofia+Sans:wght@400;450;500;700&display=swap');
+
+@theme {
+  --font-sans: 'Sofia Sans', 'Segoe UI', Roboto, sans-serif;
+  
+  /* Mastercard Design System Colors */
+  --color-canvas-cream: #F3F0EE;
+  --color-lifted-cream: #FCFBFA;
+  --color-ink-black: #141413;
+  --color-signal-orange: #CF4500;
+  --color-light-signal-orange: #F37338;
+  --color-soft-bone: #F4F4F4;
+  --color-dust-taupe: #D1CDC7;
+  --color-slate-gray: #696969;
+  --color-mastercard-red: #EB001B;
+  --color-mastercard-yellow: #F79E1B;
+  
+  /* Shadows */
+  --shadow-halo: 0 24px 48px rgba(0, 0, 0, 0.08);
+  --shadow-float: 0 4px 24px rgba(0, 0, 0, 0.04);
+  
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-md: 20px;
+  --radius-lg: 40px;
+  --radius-pill: 999px;
+}
 
 @layer base {
   body {
-    @apply bg-canvas-cream text-ink-black font-sans;
+    font-family: var(--font-sans);
+    background-color: var(--color-canvas-cream);
+    color: var(--color-ink-black);
   }
+  
   h1, h2, h3, h4, h5, h6 {
-    @apply font-sans;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    letter-spacing: -0.02em;
   }
-  /* Custom scrollbar for a more integrated feel */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background: #F3F0EE;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: #D1CDC7;
-    border-radius: 999px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: #b4aea8;
-  }
-
-  /* Add any other base styles you need */
 }
 
-/* Include the font from Google Fonts if MarkForMC is not available */
-@import url('https://fonts.googleapis.com/css2?family=Sofia+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap');
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-canvas-cream);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-dust-taupe);
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b4aea8;
+}

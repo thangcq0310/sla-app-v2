@@ -23,14 +23,14 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// --- REDESIGNED COMPONENTS (No changes) ---
+// --- REDESIGNED COMPONENTS (Mastercard Design System) ---
 
 const Card = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <div className={`bg-lifted-cream border border-dust-taupe rounded-3xl shadow-halo ${className}`}>{children}</div>
+  <div className={`bg-lifted-cream border border-dust-taupe rounded-[40px] shadow-halo p-6 ${className}`}>{children}</div>
 );
 const Eyebrow = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
   <div className={`flex items-center gap-2 text-sm font-bold text-slate-gray uppercase tracking-widest ${className}`}>
-    <div className="w-1.5 h-1.5 rounded-pill bg-light-signal-orange"></div>
+    <div className="w-1.5 h-1.5 rounded-full bg-light-signal-orange"></div>
     {children}
   </div>
 );
@@ -41,15 +41,15 @@ const Badge = ({ text, color = 'gray' }: { text: string; color?: 'gray' | 'orang
     red: 'border-mastercard-red text-mastercard-red',
     yellow: 'border-mastercard-yellow text-mastercard-yellow',
   };
-  return <span className={`px-3 py-1 text-xs font-bold rounded-pill border ${colorClasses[color]}`}>{text}</span>;
+  return <span className={`px-3 py-1 text-xs font-bold rounded-full border ${colorClasses[color]}`}>{text}</span>;
 };
 const PrimaryButton = ({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button {...props} className={`px-6 py-3 bg-ink-black text-canvas-cream rounded-xl font-medium text-base tracking-tightest hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
+  <button {...props} className={`px-6 py-3 bg-ink-black text-canvas-cream rounded-[20px] font-medium text-base tracking-tightest hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
     {children}
   </button>
 );
 const SecondaryButton = ({ children, className = "", ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <button {...props} className={`px-6 py-3 bg-white border border-ink-black text-ink-black rounded-xl font-normal text-base tracking-tightest hover:bg-soft-bone transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
+  <button {...props} className={`px-6 py-3 bg-white border border-ink-black text-ink-black rounded-[20px] font-normal text-base tracking-tightest hover:bg-soft-bone transition-all disabled:opacity-50 disabled:cursor-not-allowed ${className}`}>
     {children}
   </button>
 );
