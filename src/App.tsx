@@ -4,7 +4,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, getDoc } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 import {
-  Truck, Warehouse, Users, Search, Plus, Calendar, AlertTriangle, LayoutDashboard, FileText, ArrowUpDown, ArrowUp, ArrowDown, Printer, Lock, ChevronLeft, ChevronRight, X, MapPin, LogOut
+  Truck, Warehouse, Users, Search, Plus, LayoutDashboard, FileText, ChevronLeft, ChevronRight, X, MapPin, LogOut
 } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -101,7 +101,6 @@ export default function App() {
 
   // Auth State
   const [isLoading, setIsLoading] = useState(true);
-  const [showAuthForm, setShowAuthForm] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [authFormData, setAuthFormData] = useState({ email: '', password: '', confirmPassword: '' });
   const [authError, setAuthError] = useState('');
@@ -159,7 +158,6 @@ const handleLogin = async (e: React.FormEvent) => {
     setAuthError('');
     try {
       await signInWithEmailAndPassword(auth, authFormData.email, authFormData.password);
-      setShowAuthForm(false);
       setAuthFormData({ email: '', password: '', confirmPassword: '' });
     } catch (error: any) {
       setAuthError(error.message || 'Login failed');
@@ -181,7 +179,6 @@ const handleLogin = async (e: React.FormEvent) => {
         role: 'vendor',
         createdAt: new Date().toISOString()
       });
-      setShowAuthForm(false);
       setAuthFormData({ email: '', password: '', confirmPassword: '' });
     } catch (error: any) {
       setAuthError(error.message || 'Registration failed');
