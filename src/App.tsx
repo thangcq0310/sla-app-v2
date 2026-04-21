@@ -95,7 +95,6 @@ export default function App() {
   const [warehouseKpiConfig, setWarehouseKpiConfig] = useState<any[]>([]);
   const [vendors, setVendors] = useState<any[]>([]);
   const [capas, setCapas] = useState<any[]>([]);
-  const [factories, setFactories] = useState<any[]>([]);
 
   // UI/Form State
   const [isEditingKpi, setIsEditingKpi] = useState(false);
@@ -115,10 +114,6 @@ export default function App() {
   const [showCapaForm, setShowCapaForm] = useState(false);
   const [capaFormData, setCapaFormData] = useState<any>(null);
   const [capaSearch, setCapaSearch] = useState('');
-  const [selectedFactory, setSelectedFactory] = useState<any>(null);
-  const [showFactoryForm, setShowFactoryForm] = useState(false);
-  const [factoryFormData, setFactoryFormData] = useState<any>(null);
-  const [factorySearch, setFactorySearch] = useState('');
   const [dialogState, setDialogState] = useState<{ isOpen: boolean; title: string; message: string; type: 'success' | 'error' } | null>(null);
 
   // Auth State
@@ -131,11 +126,6 @@ export default function App() {
 
   useEffect(() => {
     const fetchFirestoreData = async () => {
-      const factoriesCollection = collection(db, "factories");
-      const factoriesSnapshot = await getDocs(factoriesCollection);
-      const factoriesList = factoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setFactories(factoriesList);
-
       const vendorsCollection = collection(db, "vendors");
       const vendorsSnapshot = await getDocs(vendorsCollection);
       const vendorsList = vendorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -238,7 +228,6 @@ const handleLogin = async (e: React.FormEvent) => {
         id: newId,
         name: '',
         type: 'Warehouse',
-        factory: factories[0]?.name || '',
         contact: '',
         phone: '',
         email: '',
@@ -344,41 +333,6 @@ const handleEditVendor = (vendor: any) => {
     } catch (error) {
       console.error("Error saving CAPA: ", error);
       setDialogState({ isOpen: true, title: 'Error', message: 'Failed to save CAPA report. Please try again.', type: 'error' });
-    }
-  };
-
-  const handleAddFactory = () => {
-    const newId = `FAC-${(factories.length + 1).toString().padStart(3, '0')}`;
-    setFactoryFormData({ id: newId, name: '', address: '', status: 'Active' });
-    setActiveTab('factories');
-    setSelectedFactory(null);
-    setShowFactoryForm(true);
-  };
-
-  const handleEditFactory = (factory: any) => {
-    setFactoryFormData({ ...factory });
-    setShowFactoryForm(true);
-  };
-
-  const handleSaveFactory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!factoryFormData) return;
-
-    try {
-      await setDoc(doc(db, "factories", factoryFormData.id), factoryFormData);
-
-      const factoriesCollection = collection(db, "factories");
-      const factoriesSnapshot = await getDocs(factoriesCollection);
-      const factoriesList = factoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setFactories(factoriesList);
-
-      setShowFactoryForm(false);
-      setFactoryFormData(null);
-      if (selectedFactory) setSelectedFactory(factoryFormData);
-       setDialogState({ isOpen: true, title: 'Success', message: 'Factory has been saved successfully.', type: 'success' });
-    } catch (error) {
-      console.error("Error saving factory: ", error);
-      setDialogState({ isOpen: true, title: 'Error', message: 'Failed to save factory. Please try again.', type: 'error' });
     }
   };
 
@@ -771,12 +725,6 @@ const handleEditVendor = (vendor: any) => {
                      </select>
                    </div>
                    <div>
-                     <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Factory</label>
-                     <select value={vendorFormData?.factory || ''} onChange={(e) => setVendorFormData({...vendorFormData, factory: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black appearance-none">
-                        {factories.map(f => <option key={f.id} value={f.name}>{f.name}</option>)}
-                     </select>
-                   </div>
-                   <div>
                      <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Contact Person</label>
                      <input required type="text" value={vendorFormData?.contact || ''} onChange={(e) => setVendorFormData({...vendorFormData, contact: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black" />
                    </div>
@@ -817,7 +765,6 @@ const handleEditVendor = (vendor: any) => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 pt-8 border-t border-dust-taupe">
                 <div><Eyebrow>Service Type</Eyebrow><div className="text-lg font-semibold mt-1">{selectedVendor.type}</div></div>
-                <div><Eyebrow>Factory</Eyebrow><div className="text-lg font-semibold mt-1">{selectedVendor.factory}</div></div>
                 <div><Eyebrow>Current Score</Eyebrow><div className="text-2xl font-bold mt-1">{selectedVendor.score.toFixed(1)}%</div></div>
                 <div><Eyebrow>Contact Person</Eyebrow><div className="text-lg font-semibold mt-1">{selectedVendor.contact}</div></div>
                 <div><Eyebrow>Phone</Eyebrow><div className="text-lg font-semibold mt-1">{selectedVendor.phone}</div></div>
@@ -904,7 +851,6 @@ return (
                  <tr>
                    <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Vendor</th>
                    <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Service</th>
-                   <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Factory</th>
                    <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Score</th>
                    <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Grade</th>
                  </tr>
@@ -917,7 +863,6 @@ return (
                        <div className="text-sm text-slate-gray font-mono">{item.id}</div>
                      </td>
                      <td className="py-5 px-6 text-base font-medium">{item.type}</td>
-                     <td className="py-5 px-6 text-base font-medium">{item.factory}</td>
                      <td className="py-5 px-6 text-lg font-bold">{item.score.toFixed(1)}%</td>
                      <td className="py-5 px-6"><Badge text={`Grade ${getGrade(item.score)}`} color={item.critical ? 'orange' : 'gray'} /></td>
                    </tr>
@@ -932,120 +877,6 @@ return (
                </div>
              )}
           </Card>
-      </div>
-    );
-  };
-
-  const renderFactoryManagement = () => {
-    if (showFactoryForm) {
-      return (
-        <div className="animate-fade-in max-w-3xl mx-auto">
-          <button onClick={() => setShowFactoryForm(false)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
-            <ChevronLeft size={16} /> Back to Factory List
-          </button>
-          <Card className="p-10">
-            <h2 className="text-xl font-bold tracking-tight">{selectedFactory ? 'Edit Factory' : 'Add New Factory'}</h2>
-            <form onSubmit={handleSaveFactory} className="space-y-6 mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Factory ID</label>
-                  <input required type="text" value={factoryFormData?.id || ''} disabled className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-canvas-cream/50 outline-none opacity-60" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Factory Name</label>
-                  <input required type="text" value={factoryFormData?.name || ''} onChange={(e) => setFactoryFormData({...factoryFormData, name: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Status</label>
-                  <select value={factoryFormData?.status || 'Active'} onChange={(e) => setFactoryFormData({...factoryFormData, status: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black appearance-none">
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Address</label>
-                  <textarea required value={factoryFormData?.address || ''} onChange={(e) => setFactoryFormData({...factoryFormData, address: e.target.value})} className="w-full border border-dust-taupe rounded-2xl px-5 py-3 bg-white outline-none focus:border-ink-black" rows={2} />
-                </div>
-              </div>
-              <div className="flex justify-end gap-4 pt-6 border-t border-dust-taupe mt-6">
-                <SecondaryButton type="button" onClick={() => setShowFactoryForm(false)}>Cancel</SecondaryButton>
-                <PrimaryButton type="submit">Save Factory</PrimaryButton>
-              </div>
-            </form>
-          </Card>
-        </div>
-      );
-    }
-    if (selectedFactory) {
-      return (
-        <div className="animate-fade-in max-w-4xl mx-auto">
-          <button onClick={() => setSelectedFactory(null)} className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-gray hover:text-ink-black transition-colors">
-            <ChevronLeft size={16} /> Back to List
-          </button>
-          <Card className="p-10">
-            <div className="flex justify-between items-start">
-              <div>
-                <div className="flex items-center gap-4 mb-2">
-                  <h2 className="text-2xl font-bold m-0 tracking-tight">{selectedFactory.name}</h2>
-                  <Badge text={selectedFactory.status} color={selectedFactory.status === 'Active' ? 'gray' : 'orange'} />
-                </div>
-                <Eyebrow>{selectedFactory.id}</Eyebrow>
-              </div>
-              <SecondaryButton onClick={() => handleEditFactory(selectedFactory)}>Edit</SecondaryButton>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8 pt-8 border-t border-dust-taupe">
-              <div><Eyebrow>Address</Eyebrow><div className="text-lg font-semibold mt-1">{selectedFactory.address}</div></div>
-            </div>
-          </Card>
-        </div>
-      );
-    }
-    const filteredFactories = factories.filter(f =>
-      f.name.toLowerCase().includes(factorySearch.toLowerCase()) ||
-      f.id.toLowerCase().includes(factorySearch.toLowerCase())
-    );
-    return (
-      <div className="space-y-6 animate-fade-in">
-        <div className="relative flex-1">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-gray" />
-          <input
-            type="text"
-            placeholder="Search factories by name or ID..."
-            className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-pill text-base font-semibold outline-none focus:border-dust-taupe shadow-sm transition-colors"
-            value={factorySearch}
-            onChange={(e) => setFactorySearch(e.target.value)}
-          />
-        </div>
-        <Card className="overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-white">
-              <tr>
-                <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Factory</th>
-                <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Address</th>
-                <th className="py-4 px-6 text-sm font-bold uppercase text-slate-gray tracking-wider">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredFactories.map((item) => (
-                <tr key={item.id} className="hover:bg-canvas-cream cursor-pointer transition-colors group border-t border-dust-taupe" onClick={() => setSelectedFactory(item)}>
-                  <td className="py-5 px-6">
-                    <div className="font-bold text-base text-ink-black group-hover:text-light-signal-orange transition-colors">{item.name}</div>
-                    <div className="text-sm text-slate-gray font-mono">{item.id}</div>
-                  </td>
-                  <td className="py-5 px-6 text-base text-slate-gray max-w-xs truncate">{item.address}</td>
-                  <td className="py-5 px-6"><Badge text={item.status} color={item.status === 'Active' ? 'gray' : 'orange'} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {filteredFactories.length === 0 && (
-            <div className="p-20 text-center">
-              <FileText className="w-12 h-12 text-line mx-auto mb-4" />
-              <p className="text-ink-black font-bold text-lg">No factories found.</p>
-              <p className="text-slate-gray text-base mt-2">Try adjusting your search or add a new factory.</p>
-            </div>
-          )}
-        </Card>
       </div>
     );
   };
@@ -1289,7 +1120,7 @@ return (
           <nav className="flex-1 w-full flex flex-col gap-2">
             {user.role === 'admin' ? (
               <>
-                {[ {tab: 'dashboard', label: 'Dashboard', icon: LayoutDashboard}, {tab: 'transport_sla', label: 'Transport SLA', icon: Truck}, {tab: 'warehouse_sla', label: 'Warehouse SLA', icon: Warehouse}, {tab: 'vendors', label: 'Vendors', icon: Users}, {tab: 'factories', label: 'Factories', icon: MapPin}, {tab: 'capa', label: 'CAPA Reports', icon: FileText} ].map(item => (
+                {[ {tab: 'dashboard', label: 'Dashboard', icon: LayoutDashboard}, {tab: 'transport_sla', label: 'Transport SLA', icon: Truck}, {tab: 'warehouse_sla', label: 'Warehouse SLA', icon: Warehouse}, {tab: 'vendors', label: 'Vendors', icon: Users}, {tab: 'capa', label: 'CAPA Reports', icon: FileText} ].map(item => (
                   <button
                     key={item.tab}
                     onClick={() => setActiveTab(item.tab)}
@@ -1345,7 +1176,6 @@ return (
 <h1 className="text-3xl font-bold m-0 tracking-tighter mt-2">
                   {activeTab === 'dashboard' ? 'Performance Insights' :
                   activeTab === 'vendors' ? 'Vendor Network' :
-                  activeTab === 'factories' ? 'Factory Network' :
                   activeTab.includes('capa') ? 'Corrective Actions' :
                   activeTab === 'my_profile' ? 'My SLA Score' : 'SLA Evaluation'}
                 </h1>
@@ -1353,9 +1183,9 @@ return (
 
 {user.role === 'admin' && (
                 <div className="flex gap-4 flex-shrink-0">
-                  <PrimaryButton onClick={activeTab === 'factories' ? handleAddFactory : activeTab.includes('capa') ? handleAddCapa : handleAddVendor}>
+                  <PrimaryButton onClick={activeTab.includes('capa') ? handleAddCapa : handleAddVendor}>
                     <Plus size={16} className="inline -ml-2 mr-2"/>
-                    {activeTab === 'factories' ? 'New Factory' : activeTab.includes('capa') ? 'New CAPA' : 'New Vendor'}
+                    {activeTab.includes('capa') ? 'New CAPA' : 'New Vendor'}
                   </PrimaryButton>
                 </div>
               )}
@@ -1456,7 +1286,6 @@ return (
           })()}
           {activeTab === 'my_capa' && renderCapaManagement()}
           {activeTab === 'vendors' && renderVendorManagement()}
-          {activeTab === 'factories' && renderFactoryManagement()}
           {activeTab === 'capa' && renderCapaManagement()}
         </main>
       </div>
