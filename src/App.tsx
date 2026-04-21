@@ -493,6 +493,77 @@ const handleEditVendor = (vendor: any) => {
             </div>
           </Card>
         </div>
+
+        {/* 3-Month Vendor Performance Table */}
+        <Card className="p-8">
+          <Eyebrow>Vendor Performance - Last 3 Months</Eyebrow>
+          <div className="mt-6 overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-dust-taupe">
+                  <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray">Vendor</th>
+                  <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">
+                    {(() => {
+                      const now = new Date();
+                      const m2 = new Date(now.getFullYear(), now.getMonth() - 2).toISOString().slice(0, 7);
+                      return m2.replace('-', '/').split('/')[1] + '/' + m2.split('-')[0];
+                    })()}
+                  </th>
+                  <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">
+                    {(() => {
+                      const now = new Date();
+                      const m1 = new Date(now.getFullYear(), now.getMonth() - 1).toISOString().slice(0, 7);
+                      return m1.replace('-', '/').split('/')[1] + '/' + m1.split('-')[0];
+                    })()}
+                  </th>
+                  <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">
+                    {(() => {
+                      const now = new Date();
+                      const m0 = now.toISOString().slice(0, 7);
+                      return m0.replace('-', '/').split('/')[1] + '/' + m0.split('-')[0];
+                    })()}
+                  </th>
+                  <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Average</th>
+                  <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vendors.map((v) => {
+                  const getMonthScore = (monthsAgo: number) => {
+                    const targetMonth = new Date();
+                    targetMonth.setMonth(targetMonth.getMonth() - monthsAgo);
+                    const monthStr = targetMonth.toISOString().slice(0, 7);
+                    const vendorScore = vendorScoresData.find(s => s.vendorId === v.id && s.month === monthStr);
+                    if (!vendorScore?.scores) return v.score || 0;
+                    return vendorScore.scores.reduce((sum: number, s: any) => sum + (s.score * s.weight / 100), 0);
+                  };
+                  
+                  const m2 = getMonthScore(2);
+                  const m1 = getMonthScore(1);
+                  const m0 = getMonthScore(0);
+                  const avg = (m2 + m1 + m0) / 3;
+                  const grade = avg >= 90 ? 'A' : avg >= 80 ? 'B' : 'C';
+                  
+                  return (
+                    <tr key={v.id} className="border-b border-dust-taupe hover:bg-canvas-cream cursor-pointer transition-colors" onClick={() => { setSelectedVendor(v); setActiveTab('vendors'); }}>
+                      <td className="py-4 px-4">
+                        <div className="font-medium">{v.name}</div>
+                        <div className="text-sm text-slate-gray font-mono">{v.id}</div>
+                      </td>
+                      <td className="py-4 px-4 text-center font-medium">{m2 > 0 ? m2.toFixed(1) + '%' : '-'}</td>
+                      <td className="py-4 px-4 text-center font-medium">{m1 > 0 ? m1.toFixed(1) + '%' : '-'}</td>
+                      <td className="py-4 px-4 text-center font-medium">{m0 > 0 ? m0.toFixed(1) + '%' : '-'}</td>
+                      <td className="py-4 px-4 text-center font-bold">{avg > 0 ? avg.toFixed(1) + '%' : '-'}</td>
+                      <td className="py-4 px-4 text-center">
+                        <Badge text={`Grade ${grade}`} color={grade === 'A' ? 'gray' : grade === 'B' ? 'orange' : 'red'} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       </div>
     );
   };
