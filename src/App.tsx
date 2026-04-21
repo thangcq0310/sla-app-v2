@@ -234,16 +234,16 @@ const handleLogin = async (e: React.FormEvent) => {
         return match ? Math.max(max, parseInt(match[1], 10)) : max;
     }, 0);
     const newId = `VN-${(maxIdNum + 1).toString().padStart(3, '0')}`;
-    setVendorFormData({ 
-        id: newId, 
-        name: '', 
-        type: 'Warehouse', 
-        factory: factories[0]?.name || '', 
-        contact: '', 
-        phone: '', 
-        email: '', 
-        score: 100, 
-        critical: false 
+    setVendorFormData({
+        id: newId,
+        name: '',
+        type: 'Warehouse',
+        factory: factories[0]?.name || '',
+        contact: '',
+        phone: '',
+        email: '',
+        score: 100,
+        critical: false
     });
     setActiveTab('vendors');
     setSelectedVendor(null);
@@ -258,7 +258,7 @@ const handleEditVendor = (vendor: any) => {
   const handleCreateVendorAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedVendor || !accountFormData.email || !accountFormData.password) return;
-    
+
     try {
       const cred = await createUserWithEmailAndPassword(auth, accountFormData.email, accountFormData.password);
       await setDoc(doc(db, "users", cred.user.uid), {
@@ -269,13 +269,13 @@ const handleEditVendor = (vendor: any) => {
         createdAt: new Date().toISOString()
       });
       await setDoc(doc(db, "vendors", selectedVendor.id), { ...selectedVendor, userId: cred.user.uid });
-      
+
       const vendorsCollection = collection(db, "vendors");
       const vendorsSnapshot = await getDocs(vendorsCollection);
       const vendorsList = vendorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setVendors(vendorsList);
       setSelectedVendor({ ...selectedVendor, userId: cred.user.uid });
-      
+
       setShowAccountForm(false);
       setAccountFormData({ email: '', password: '' });
       setDialogState({ isOpen: true, title: 'Success', message: 'Vendor account has been created.', type: 'success' });
@@ -295,7 +295,7 @@ const handleEditVendor = (vendor: any) => {
 
     try {
       await setDoc(doc(db, "vendors", vendorFormData.id), vendorFormData);
-      
+
       const vendorsCollection = collection(db, "vendors");
       const vendorsSnapshot = await getDocs(vendorsCollection);
       const vendorsList = vendorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -427,7 +427,7 @@ const handleEditVendor = (vendor: any) => {
         target: kpi.target,
         score: 100
       })) || [];
-      
+
       await setDoc(doc(db, "vendorScores", monthDocId), {
         vendorId: selectedVendor.id,
         vendorName: selectedVendor.name,
@@ -436,9 +436,9 @@ const handleEditVendor = (vendor: any) => {
         scores: scoresData,
         createdAt: new Date().toISOString()
       });
-      
+
       setSubmittedMonths([...submittedMonths, evaluationMonth]);
-      
+
       setIsSubmitted(true);
       setDialogState({ isOpen: true, title: 'Success', message: `Score for ${evaluationMonth} has been submitted successfully.`, type: 'success' });
     } catch (error: any) {
@@ -551,13 +551,13 @@ const handleEditVendor = (vendor: any) => {
                     if (!vendorScore?.scores) return v.score || 0;
                     return vendorScore.scores.reduce((sum: number, s: any) => sum + (s.score * s.weight / 100), 0);
                   };
-                  
+
                   const m2 = getMonthScore(2);
                   const m1 = getMonthScore(1);
                   const m0 = getMonthScore(0);
                   const avg = (m2 + m1 + m0) / 3;
                   const grade = avg >= 90 ? 'A' : avg >= 80 ? 'B' : 'C';
-                  
+
                   return (
                     <tr key={v.id} className="border-b border-dust-taupe hover:bg-canvas-cream cursor-pointer transition-colors" onClick={() => { setSelectedVendor(v); setActiveTab('vendors'); }}>
                       <td className="py-4 px-4">
@@ -663,8 +663,8 @@ const handleEditVendor = (vendor: any) => {
                 </div>
                 <div>
 <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Evaluation Period</label>
-                      <input 
-                        type="month" 
+                      <input
+                        type="month"
                         value={evaluationMonth}
                         onChange={(e) => {
                           setEvaluationMonth(e.target.value);
@@ -676,38 +676,48 @@ const handleEditVendor = (vendor: any) => {
             </div>
         </Card>
         <Card className="p-8">
-          <h3 className="text-xl font-bold tracking-tight mb-6">KPI Scoring</h3>
-          <div className="space-y-4">
-{config.map((kpi, idx) => {
-               const scoreValue = 100;
-               return (
-               <div key={kpi.id} className="flex flex-wrap justify-between items-center p-5 bg-canvas-cream rounded-xl">
-                   <div>
-                      <div className="flex items-center gap-3">
-                         <span className="text-base font-bold">{kpi.label}</span>
-                         {kpi.critical && <Badge text="Critical" color="orange" />}
-                      </div>
-                      <div className="text-sm text-slate-gray mt-1">Weight: {kpi.weight}% • Target: {kpi.target}%</div>
-                   </div>
-                   <div className="flex items-center gap-4 mt-4 sm:mt-0">
-                       <div className="relative">
-                           <input 
-                             type="number" 
-                             defaultValue={scoreValue}
-                             onChange={(e) => {
-                               const newScores = [...evaluationScores];
-                               newScores[idx] = { criteriaId: kpi.id, score: Number(e.target.value), weight: kpi.weight };
-                               setEvaluationScores(newScores);
-                             }}
-                             className="w-28 px-4 py-2 border bg-white border-dust-taupe rounded-pill text-center text-lg font-bold outline-none" 
-                           />
-                           <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-slate-gray">%</span>
-                       </div>
-                   </div>
-               </div>
-               );
-             })}
-           </div>
+            <h3 className="text-xl font-bold tracking-tight mb-6">KPI Scoring</h3>
+            <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                    <thead>
+                        <tr className="border-b border-dust-taupe">
+                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray">Criteria</th>
+                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Weight</th>
+                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Target</th>
+                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Critical</th>
+                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {config.map((kpi, idx) => {
+                            const scoreValue = 100;
+                            return (
+                                <tr key={kpi.id} className="border-b border-dust-taupe">
+                                    <td className="py-4 px-4 font-medium">{kpi.label}</td>
+                                    <td className="py-4 px-4 text-center">{kpi.weight}%</td>
+                                    <td className="py-4 px-4 text-center">{kpi.target}%</td>
+                                    <td className="py-4 px-4 text-center">{kpi.critical ? <Badge text="Critical" color="orange" /> : ''}</td>
+                                    <td className="py-4 px-4 text-center">
+                                        <div className="relative inline-block">
+                                            <input
+                                                type="number"
+                                                defaultValue={scoreValue}
+                                                onChange={(e) => {
+                                                    const newScores = [...evaluationScores];
+                                                    newScores[idx] = { criteriaId: kpi.id, score: Number(e.target.value), weight: kpi.weight };
+                                                    setEvaluationScores(newScores);
+                                                }}
+                                                className="w-28 px-4 py-2 border bg-white border-dust-taupe rounded-pill text-center text-lg font-bold outline-none"
+                                            />
+                                            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-slate-gray">%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
            {/* Final Weighted Score */}
            <div className="mt-6 pt-6 border-t border-dust-taupe flex justify-between items-center">
              <div className="text-base font-bold text-slate-gray uppercase">Final Weighted Score</div>
@@ -732,7 +742,7 @@ const handleEditVendor = (vendor: any) => {
       </div>
     );
   };
-  
+
   const renderVendorManagement = () => {
     const getGrade = (score: number) => score >= 90 ? 'A' : score >= 80 ? 'B' : 'C';
     if (showVendorForm) {
@@ -861,7 +871,7 @@ const handleEditVendor = (vendor: any) => {
         </div>
       );
     }
-    const filteredVendors = vendors.filter(v => 
+    const filteredVendors = vendors.filter(v =>
       (vendorFilterType === 'All' || v.type === vendorFilterType) &&
       (v.name.toLowerCase().includes(vendorSearch.toLowerCase()) || v.id.toLowerCase().includes(vendorSearch.toLowerCase()))
     );
@@ -870,15 +880,15 @@ return (
           <div className="flex flex-col sm:flex-row gap-4 mb-2">
              <div className="relative flex-1">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-gray" />
-                <input 
-                  type="text" 
-                  placeholder="Search vendors by name or ID..." 
+                <input
+                  type="text"
+                  placeholder="Search vendors by name or ID..."
                   className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-pill text-base font-medium outline-none focus:border-dust-taupe shadow-sm transition-colors"
                   value={vendorSearch}
                   onChange={(e) => setVendorSearch(e.target.value)}
                 />
              </div>
-             <select 
+             <select
                className="px-6 py-4 bg-white border-2 border-transparent rounded-pill text-base font-bold text-ink-black outline-none cursor-pointer shadow-sm appearance-none"
                value={vendorFilterType}
                onChange={(e) => setVendorFilterType(e.target.value)}
@@ -990,17 +1000,17 @@ return (
         </div>
       );
     }
-    const filteredFactories = factories.filter(f => 
-      f.name.toLowerCase().includes(factorySearch.toLowerCase()) || 
+    const filteredFactories = factories.filter(f =>
+      f.name.toLowerCase().includes(factorySearch.toLowerCase()) ||
       f.id.toLowerCase().includes(factorySearch.toLowerCase())
     );
     return (
       <div className="space-y-6 animate-fade-in">
         <div className="relative flex-1">
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-gray" />
-          <input 
-            type="text" 
-            placeholder="Search factories by name or ID..." 
+          <input
+            type="text"
+            placeholder="Search factories by name or ID..."
             className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-pill text-base font-semibold outline-none focus:border-dust-taupe shadow-sm transition-colors"
             value={factorySearch}
             onChange={(e) => setFactorySearch(e.target.value)}
@@ -1039,7 +1049,7 @@ return (
       </div>
     );
   };
-  
+
   const renderCapaManagement = () => {
     const PRIORITY_COLOR: Record<string, 'orange' | 'yellow' | 'gray'> = { 'High': 'orange', 'Medium': 'yellow', 'Low': 'gray' };
     const STATUS_COLOR: Record<string, 'gray' | 'yellow'> = { 'Open': 'yellow', 'In Progress': 'yellow', 'Resolved': 'gray', 'Closed': 'gray' };
@@ -1148,9 +1158,9 @@ return (
       <div className="space-y-6 animate-fade-in">
          <div className="relative flex-1">
            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-gray" />
-           <input 
-             type="text" 
-             placeholder="Search CAPAs by ID, issue, or vendor..." 
+           <input
+             type="text"
+             placeholder="Search CAPAs by ID, issue, or vendor..."
              className="w-full pl-14 pr-5 py-4 bg-white border-2 border-transparent rounded-pill text-base font-semibold outline-none focus:border-dust-taupe shadow-sm transition-colors"
              value={capaSearch}
              onChange={(e) => setCapaSearch(e.target.value)}
@@ -1265,8 +1275,8 @@ return (
       )}
       <div className="flex flex-1 overflow-hidden">
         <aside className={`bg-ink-black text-white p-6 flex flex-col h-full flex-shrink-0 print:hidden transition-all duration-300 ease-in-out relative ${isSidebarCollapsed ? 'w-[104px] items-center' : 'w-[280px]'}`}>
-          <button 
-            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             className="absolute -right-4 top-10 w-8 h-8 bg-white border border-dust-taupe rounded-pill flex items-center justify-center text-slate-gray hover:text-ink-black shadow-md cursor-pointer transition-all z-10"
           >
             {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -1275,37 +1285,37 @@ return (
           <div className={`mb-12 w-full ${isSidebarCollapsed ? 'mx-auto' : ''}`}>
             <BrandLogo isPill={isSidebarCollapsed} isLight={true}/>
           </div>
-          
+
           <nav className="flex-1 w-full flex flex-col gap-2">
             {user.role === 'admin' ? (
               <>
                 {[ {tab: 'dashboard', label: 'Dashboard', icon: LayoutDashboard}, {tab: 'transport_sla', label: 'Transport SLA', icon: Truck}, {tab: 'warehouse_sla', label: 'Warehouse SLA', icon: Warehouse}, {tab: 'vendors', label: 'Vendors', icon: Users}, {tab: 'factories', label: 'Factories', icon: MapPin}, {tab: 'capa', label: 'CAPA Reports', icon: FileText} ].map(item => (
-                  <button 
+                  <button
                     key={item.tab}
-                    onClick={() => setActiveTab(item.tab)} 
+                    onClick={() => setActiveTab(item.tab)}
                     title={isSidebarCollapsed ? item.label : ""}
                     className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-pill text-sm font-medium tracking-tightest transition-all ${activeTab === item.tab ? 'bg-canvas-cream text-ink-black' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
-                      <item.icon size={20} /> 
+                      <item.icon size={20} />
                       {!isSidebarCollapsed && <span>{item.label}</span>}
                   </button>
                 ))}
               </>
             ) : (
-              <> 
+              <>
                 {[ {tab: 'my_profile', label: 'My SLA Score', icon: LayoutDashboard}, {tab: 'my_capa', label: 'My CAPA Reports', icon: FileText}, ].map(item => (
-                  <button 
-                    key={item.tab} 
-                    onClick={() => setActiveTab(item.tab)} 
+                  <button
+                    key={item.tab}
+                    onClick={() => setActiveTab(item.tab)}
                     title={isSidebarCollapsed ? item.label : ""}
                     className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-pill text-sm font-medium tracking-tightest transition-all ${activeTab === item.tab ? 'bg-canvas-cream text-ink-black' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
-                      <item.icon size={20} /> 
+                      <item.icon size={20} />
                       {!isSidebarCollapsed && <span>{item.label}</span>}
                   </button>
                 ))}
               </>
             )}
           </nav>
-          
+
           <div className="mt-auto pt-4 border-t border-white/10">
             <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : 'px-4'} mb-2`}>
               <div className="w-10 h-10 rounded-pill bg-light-signal-orange flex items-center justify-center text-white font-bold text-sm">
@@ -1318,7 +1328,7 @@ return (
                 </div>
               )}
             </div>
-            <button 
+            <button
               onClick={handleLogout}
               className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-12' : 'px-4 h-10'} rounded-pill text-sm font-medium tracking-tightest text-gray-400 hover:bg-white/10 hover:text-white transition-colors`}
             >
@@ -1333,14 +1343,14 @@ return (
             <div>
               <Eyebrow>{activeTab.replace('_', ' ').replace('sla', 'SLA')}</Eyebrow>
 <h1 className="text-3xl font-bold m-0 tracking-tighter mt-2">
-                  {activeTab === 'dashboard' ? 'Performance Insights' : 
-                  activeTab === 'vendors' ? 'Vendor Network' : 
+                  {activeTab === 'dashboard' ? 'Performance Insights' :
+                  activeTab === 'vendors' ? 'Vendor Network' :
                   activeTab === 'factories' ? 'Factory Network' :
-                  activeTab.includes('capa') ? 'Corrective Actions' : 
+                  activeTab.includes('capa') ? 'Corrective Actions' :
                   activeTab === 'my_profile' ? 'My SLA Score' : 'SLA Evaluation'}
                 </h1>
             </div>
-            
+
 {user.role === 'admin' && (
                 <div className="flex gap-4 flex-shrink-0">
                   <PrimaryButton onClick={activeTab === 'factories' ? handleAddFactory : activeTab.includes('capa') ? handleAddCapa : handleAddVendor}>
@@ -1358,7 +1368,7 @@ return (
               const v = vendors.find(v => v.id === user.vendorId);
               const config = v?.type === 'Transport' ? transportKpiConfig : warehouseKpiConfig;
               const vendorMonthScores = vendorScoresData.find(s => s.vendorId === v?.id && s.month === vendorEvalMonth);
-              
+
               if (user.isNew) {
                 return (
                   <div className="text-center p-8 animate-fade-in">
@@ -1390,15 +1400,15 @@ return (
                       </div>
                       <div className="flex items-center gap-4">
                         <label className="text-sm font-bold text-slate-gray uppercase">Evaluation Period</label>
-                        <input 
-                          type="month" 
+                        <input
+                          type="month"
                           value={vendorEvalMonth}
                           onChange={(e) => setVendorEvalMonth(e.target.value)}
                           className="border border-dust-taupe rounded-pill px-4 py-2 bg-white outline-none focus:border-ink-black"
                         />
                       </div>
                   </Card>
-                  
+
                   <Card className="p-8">
                       <Eyebrow>Criteria Scores</Eyebrow>
                       <div className="mt-6 overflow-x-auto">
@@ -1406,6 +1416,7 @@ return (
                           <thead>
                             <tr className="border-b border-dust-taupe">
                               <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray">Criteria</th>
+                              <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Critical</th>
                               <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Weight</th>
                               <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Target</th>
                               <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Score</th>
@@ -1413,28 +1424,29 @@ return (
                             </tr>
                           </thead>
                           <tbody>
-{config?.map((criteria: any) => {
-                              const savedScore = vendorMonthScores?.scores?.find((s: any) => s.criteriaId === criteria.id);
-                              const criteriaScore = savedScore?.score ?? v?.score ?? 0;
-                              const isPass = criteriaScore >= criteria.target;
-                              
-                              return (
-                              <tr key={criteria.id} className="border-b border-dust-taupe">
-                                <td className="py-4 px-4 font-medium">{criteria.label}</td>
-                                <td className="py-4 px-4 text-center">{criteria.weight}%</td>
-                                <td className="py-4 px-4 text-center">{criteria.target}%</td>
-                                <td className="py-4 px-4 text-center font-bold">
-                                  {criteriaScore.toFixed(1)}
-                                </td>
-                                <td className="py-4 px-4 text-center">
-                                  <Badge 
-                                    text={isPass ? 'Pass' : 'Fail'} 
-                                    color={isPass ? 'gray' : 'orange'} 
-                                  />
-                                </td>
-                              </tr>
-                            );
-                          })}
+                            {config?.map((criteria: any) => {
+                                const savedScore = vendorMonthScores?.scores?.find((s: any) => s.criteriaId === criteria.id);
+                                const criteriaScore = savedScore?.score ?? v?.score ?? 0;
+                                const isPass = criteriaScore >= criteria.target;
+
+                                return (
+                                <tr key={criteria.id} className="border-b border-dust-taupe">
+                                    <td className="py-4 px-4 font-medium">{criteria.label}</td>
+                                    <td className="py-4 px-4 text-center">{criteria.critical ? <Badge text="Critical" color="orange"/> : ''}</td>
+                                    <td className="py-4 px-4 text-center">{criteria.weight}%</td>
+                                    <td className="py-4 px-4 text-center">{criteria.target}%</td>
+                                    <td className="py-4 px-4 text-center font-bold">
+                                    {criteriaScore.toFixed(1)}
+                                    </td>
+                                    <td className="py-4 px-4 text-center">
+                                    <Badge
+                                        text={isPass ? 'Pass' : 'Fail'}
+                                        color={isPass ? 'gray' : 'orange'}
+                                    />
+                                    </td>
+                                </tr>
+                                );
+                            })}
                           </tbody>
                         </table>
                       </div>
