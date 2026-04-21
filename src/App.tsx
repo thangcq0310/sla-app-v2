@@ -229,16 +229,26 @@ const handleLogin = async (e: React.FormEvent) => {
   }, [user, vendors]);
 
   const handleAddVendor = () => {
-      const maxIdNum = vendors.reduce((max, v) => {
-         const match = v.id?.match(/^VN-(\d+)$/);
-         return match ? Math.max(max, parseInt(match[1], 10)) : max;
-      }, 0);
-      const newId = `VN-${(maxIdNum + 1).toString().padStart(3, '0')}`;
-      setVendorFormData({ id: newId, name: '', type: 'Warehouse', factory: 'Long An', contact: '', phone: '', email: '', score: 100, critical: false });
-      setActiveTab('vendors');
-      setSelectedVendor(null);
-      setShowVendorForm(true);
-   };
+    const maxIdNum = vendors.reduce((max, v) => {
+        const match = v.id?.match(/^VN-(\d+)$/);
+        return match ? Math.max(max, parseInt(match[1], 10)) : max;
+    }, 0);
+    const newId = `VN-${(maxIdNum + 1).toString().padStart(3, '0')}`;
+    setVendorFormData({ 
+        id: newId, 
+        name: '', 
+        type: 'Warehouse', 
+        factory: factories[0]?.name || '', 
+        contact: '', 
+        phone: '', 
+        email: '', 
+        score: 100, 
+        critical: false 
+    });
+    setActiveTab('vendors');
+    setSelectedVendor(null);
+    setShowVendorForm(true);
+  };
 
 const handleEditVendor = (vendor: any) => {
       setVendorFormData({ ...vendor });
@@ -752,7 +762,7 @@ const handleEditVendor = (vendor: any) => {
                    </div>
                    <div>
                      <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Factory</label>
-                     <select value={vendorFormData?.factory || 'Long An'} onChange={(e) => setVendorFormData({...vendorFormData, factory: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black appearance-none">
+                     <select value={vendorFormData?.factory || ''} onChange={(e) => setVendorFormData({...vendorFormData, factory: e.target.value})} className="w-full border border-dust-taupe rounded-pill px-5 py-3 bg-white outline-none focus:border-ink-black appearance-none">
                         {factories.map(f => <option key={f.id} value={f.name}>{f.name}</option>)}
                      </select>
                    </div>
