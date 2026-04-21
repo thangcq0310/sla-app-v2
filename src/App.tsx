@@ -106,6 +106,7 @@ export default function App() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedMonths, setSubmittedMonths] = useState<string[]>([]);
   const [vendorScoresData, setVendorScoresData] = useState<any[]>([]);
+  const [evaluationScores, setEvaluationScores] = useState<any[]>([]);
   const [vendorSearch, setVendorSearch] = useState('');
   const [vendorFilterType, setVendorFilterType] = useState('All');
   const [selectedVendor, setSelectedVendor] = useState<any>(null);
@@ -592,7 +593,9 @@ const handleEditVendor = (vendor: any) => {
         <Card className="p-8">
           <h3 className="text-xl font-bold tracking-tight mb-6">KPI Scoring</h3>
           <div className="space-y-4">
-            {config.map((kpi) => (
+{config.map((kpi, idx) => {
+               const scoreValue = 100;
+               return (
                <div key={kpi.id} className="flex flex-wrap justify-between items-center p-5 bg-canvas-cream rounded-xl">
                    <div>
                       <div className="flex items-center gap-3">
@@ -603,13 +606,36 @@ const handleEditVendor = (vendor: any) => {
                    </div>
                    <div className="flex items-center gap-4 mt-4 sm:mt-0">
                        <div className="relative">
-                           <input type="number" defaultValue={100} className="w-28 px-4 py-2 border bg-white border-dust-taupe rounded-pill text-center text-lg font-bold outline-none" />
+                           <input 
+                             type="number" 
+                             defaultValue={scoreValue}
+                             onChange={(e) => {
+                               const newScores = [...evaluationScores];
+                               newScores[idx] = { criteriaId: kpi.id, score: Number(e.target.value), weight: kpi.weight };
+                               setEvaluationScores(newScores);
+                             }}
+                             className="w-28 px-4 py-2 border bg-white border-dust-taupe rounded-pill text-center text-lg font-bold outline-none" 
+                           />
                            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-slate-gray">%</span>
                        </div>
                    </div>
                </div>
-            ))}
-          </div>
+               );
+             })}
+           </div>
+           {/* Final Weighted Score */}
+           <div className="mt-6 pt-6 border-t border-dust-taupe flex justify-between items-center">
+             <div className="text-base font-bold text-slate-gray uppercase">Final Weighted Score</div>
+             <div className="text-2xl font-bold text-signal-orange">
+               {(() => {
+                 const total = config?.reduce((sum: number, kpi: any, idx: number) => {
+                   const score = evaluationScores[idx]?.score ?? 100;
+                   return sum + (score * kpi.weight / 100);
+                 }, 0) ?? 0;
+                 return total.toFixed(1) + '%';
+               })()}
+             </div>
+           </div>
         </Card>
 <div className="mt-8 pt-8 border-t border-dust-taupe flex justify-end gap-4">
               <SecondaryButton onClick={() => window.print()}>Print / Save as PDF</SecondaryButton>
