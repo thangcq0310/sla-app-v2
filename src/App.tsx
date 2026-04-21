@@ -1228,6 +1228,9 @@ return (
             Sign In
           </PrimaryButton>
         </form>
+        <div className="mt-8 pt-6 border-t border-dust-taupe flex justify-center">
+          <p className="text-sm text-slate-gray">Powered by Thangcq.NAF © 2026</p>
+        </div>
       </Card>
     </div>
   );
@@ -1429,6 +1432,9 @@ return (
         {activeTab === 'factories' && renderFactoryManagement()}
         {activeTab === 'capa' && renderCapaManagement()}
       </main>
+      <footer className="py-6 border-t border-dust-taupe bg-canvas-cream flex justify-center">
+        <p className="text-sm text-slate-gray">Powered by Thangcq.NAF © 2026</p>
+      </footer>
     </div>
   );
 }
