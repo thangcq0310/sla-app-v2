@@ -1240,7 +1240,7 @@ return (
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-canvas-cream text-ink-black font-sans print:h-auto print:overflow-visible print:bg-white">
+    <div className="flex flex-col h-screen w-full overflow-hidden bg-canvas-cream text-ink-black font-sans print:h-auto print:overflow-visible print:bg-white">
        {dialogState?.isOpen && (
         <Dialog
           title={dialogState.title}
@@ -1249,190 +1249,192 @@ return (
           onClose={() => setDialogState(null)}
         />
       )}
-      <aside className={`bg-ink-black text-white p-6 flex flex-col h-full flex-shrink-0 print:hidden transition-all duration-300 ease-in-out relative ${isSidebarCollapsed ? 'w-[104px] items-center' : 'w-[280px]'}`}>
-        <button 
-          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
-          className="absolute -right-4 top-10 w-8 h-8 bg-white border border-dust-taupe rounded-pill flex items-center justify-center text-slate-gray hover:text-ink-black shadow-md cursor-pointer transition-all z-10"
-        >
-          {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-        </button>
-
-        <div className={`mb-12 w-full ${isSidebarCollapsed ? 'mx-auto' : ''}`}>
-          <BrandLogo isPill={isSidebarCollapsed} isLight={true}/>
-        </div>
-        
-        <nav className="flex-1 w-full flex flex-col gap-2">
-          {user.role === 'admin' ? (
-            <>
-              {[ {tab: 'dashboard', label: 'Dashboard', icon: LayoutDashboard}, {tab: 'transport_sla', label: 'Transport SLA', icon: Truck}, {tab: 'warehouse_sla', label: 'Warehouse SLA', icon: Warehouse}, {tab: 'vendors', label: 'Vendors', icon: Users}, {tab: 'factories', label: 'Factories', icon: MapPin}, {tab: 'capa', label: 'CAPA Reports', icon: FileText} ].map(item => (
-                <button 
-                  key={item.tab}
-                  onClick={() => setActiveTab(item.tab)} 
-                  title={isSidebarCollapsed ? item.label : ""}
-                  className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-pill text-sm font-medium tracking-tightest transition-all ${activeTab === item.tab ? 'bg-canvas-cream text-ink-black' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
-                    <item.icon size={20} /> 
-                    {!isSidebarCollapsed && <span>{item.label}</span>}
-                </button>
-              ))}
-            </>
-          ) : (
-            <> 
-              {[ {tab: 'my_profile', label: 'My SLA Score', icon: LayoutDashboard}, {tab: 'my_capa', label: 'My CAPA Reports', icon: FileText}, ].map(item => (
-                <button 
-                  key={item.tab} 
-                  onClick={() => setActiveTab(item.tab)} 
-                  title={isSidebarCollapsed ? item.label : ""}
-                  className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-pill text-sm font-medium tracking-tightest transition-all ${activeTab === item.tab ? 'bg-canvas-cream text-ink-black' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
-                    <item.icon size={20} /> 
-                    {!isSidebarCollapsed && <span>{item.label}</span>}
-                </button>
-              ))}
-            </>
-          )}
-        </nav>
-        
-        <div className="mt-auto pt-4 border-t border-white/10">
-          <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : 'px-4'} mb-2`}>
-            <div className="w-10 h-10 rounded-pill bg-light-signal-orange flex items-center justify-center text-white font-bold text-sm">
-              {user.email?.[0].toUpperCase()}
-            </div>
-            {!isSidebarCollapsed && (
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium truncate">{user.email}</div>
-                <div className="text-xs text-gray-400 capitalize">{user.role}</div>
-              </div>
-            )}
-          </div>
+      <div className="flex flex-1 overflow-hidden">
+        <aside className={`bg-ink-black text-white p-6 flex flex-col h-full flex-shrink-0 print:hidden transition-all duration-300 ease-in-out relative ${isSidebarCollapsed ? 'w-[104px] items-center' : 'w-[280px]'}`}>
           <button 
-            onClick={handleLogout}
-            className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-12' : 'px-4 h-10'} rounded-pill text-sm font-medium tracking-tightest text-gray-400 hover:bg-white/10 hover:text-white transition-colors`}
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+            className="absolute -right-4 top-10 w-8 h-8 bg-white border border-dust-taupe rounded-pill flex items-center justify-center text-slate-gray hover:text-ink-black shadow-md cursor-pointer transition-all z-10"
           >
-            <LogOut size={20} />
-            {!isSidebarCollapsed && <span>Logout</span>}
+            {isSidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
-        </div>
-      </aside>
 
-      <main className="flex-1 p-10 h-full overflow-y-auto w-full print:p-0 print:overflow-visible">
-        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-10 print:hidden">
-           <div>
-             <Eyebrow>{activeTab.replace('_', ' ').replace('sla', 'SLA')}</Eyebrow>
-<h1 className="text-3xl font-bold m-0 tracking-tighter mt-2">
-                {activeTab === 'dashboard' ? 'Performance Insights' : 
-                 activeTab === 'vendors' ? 'Vendor Network' : 
-                 activeTab === 'factories' ? 'Factory Network' :
-                 activeTab.includes('capa') ? 'Corrective Actions' : 
-                 activeTab === 'my_profile' ? 'My SLA Score' : 'SLA Evaluation'}
-              </h1>
-           </div>
-           
-{user.role === 'admin' && (
-              <div className="flex gap-4 flex-shrink-0">
-                <PrimaryButton onClick={activeTab === 'factories' ? handleAddFactory : activeTab.includes('capa') ? handleAddCapa : handleAddVendor}>
-                  <Plus size={16} className="inline -ml-2 mr-2"/>
-                  {activeTab === 'factories' ? 'New Factory' : activeTab.includes('capa') ? 'New CAPA' : 'New Vendor'}
-                </PrimaryButton>
-              </div>
+          <div className={`mb-12 w-full ${isSidebarCollapsed ? 'mx-auto' : ''}`}>
+            <BrandLogo isPill={isSidebarCollapsed} isLight={true}/>
+          </div>
+          
+          <nav className="flex-1 w-full flex flex-col gap-2">
+            {user.role === 'admin' ? (
+              <>
+                {[ {tab: 'dashboard', label: 'Dashboard', icon: LayoutDashboard}, {tab: 'transport_sla', label: 'Transport SLA', icon: Truck}, {tab: 'warehouse_sla', label: 'Warehouse SLA', icon: Warehouse}, {tab: 'vendors', label: 'Vendors', icon: Users}, {tab: 'factories', label: 'Factories', icon: MapPin}, {tab: 'capa', label: 'CAPA Reports', icon: FileText} ].map(item => (
+                  <button 
+                    key={item.tab}
+                    onClick={() => setActiveTab(item.tab)} 
+                    title={isSidebarCollapsed ? item.label : ""}
+                    className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-pill text-sm font-medium tracking-tightest transition-all ${activeTab === item.tab ? 'bg-canvas-cream text-ink-black' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
+                      <item.icon size={20} /> 
+                      {!isSidebarCollapsed && <span>{item.label}</span>}
+                  </button>
+                ))}
+              </>
+            ) : (
+              <> 
+                {[ {tab: 'my_profile', label: 'My SLA Score', icon: LayoutDashboard}, {tab: 'my_capa', label: 'My CAPA Reports', icon: FileText}, ].map(item => (
+                  <button 
+                    key={item.tab} 
+                    onClick={() => setActiveTab(item.tab)} 
+                    title={isSidebarCollapsed ? item.label : ""}
+                    className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-14' : 'px-4 h-12'} rounded-pill text-sm font-medium tracking-tightest transition-all ${activeTab === item.tab ? 'bg-canvas-cream text-ink-black' : 'text-gray-400 hover:bg-white/10 hover:text-white'}`}>
+                      <item.icon size={20} /> 
+                      {!isSidebarCollapsed && <span>{item.label}</span>}
+                  </button>
+                ))}
+              </>
             )}
-        </header>
+          </nav>
+          
+          <div className="mt-auto pt-4 border-t border-white/10">
+            <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : 'px-4'} mb-2`}>
+              <div className="w-10 h-10 rounded-pill bg-light-signal-orange flex items-center justify-center text-white font-bold text-sm">
+                {user.email?.[0].toUpperCase()}
+              </div>
+              {!isSidebarCollapsed && (
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{user.email}</div>
+                  <div className="text-xs text-gray-400 capitalize">{user.role}</div>
+                </div>
+              )}
+            </div>
+            <button 
+              onClick={handleLogout}
+              className={`w-full flex items-center gap-4 ${isSidebarCollapsed ? 'justify-center px-0 h-12' : 'px-4 h-10'} rounded-pill text-sm font-medium tracking-tightest text-gray-400 hover:bg-white/10 hover:text-white transition-colors`}
+            >
+              <LogOut size={20} />
+              {!isSidebarCollapsed && <span>Logout</span>}
+            </button>
+          </div>
+        </aside>
 
-        {activeTab === 'dashboard' && renderDashboard()}
-        {activeTab === 'transport_sla' && renderSLAInput('Transport')}
-        {activeTab === 'warehouse_sla' && renderSLAInput('Warehouse')}
-{activeTab === 'my_profile' && (() => {
-            const v = vendors.find(v => v.id === user.vendorId);
-            const config = v?.type === 'Transport' ? transportKpiConfig : warehouseKpiConfig;
-            const vendorMonthScores = vendorScoresData.find(s => s.vendorId === v?.id && s.month === vendorEvalMonth);
+        <main className="flex-1 p-10 h-full overflow-y-auto w-full print:p-0 print:overflow-visible">
+          <header className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-10 print:hidden">
+            <div>
+              <Eyebrow>{activeTab.replace('_', ' ').replace('sla', 'SLA')}</Eyebrow>
+<h1 className="text-3xl font-bold m-0 tracking-tighter mt-2">
+                  {activeTab === 'dashboard' ? 'Performance Insights' : 
+                  activeTab === 'vendors' ? 'Vendor Network' : 
+                  activeTab === 'factories' ? 'Factory Network' :
+                  activeTab.includes('capa') ? 'Corrective Actions' : 
+                  activeTab === 'my_profile' ? 'My SLA Score' : 'SLA Evaluation'}
+                </h1>
+            </div>
             
-            if (user.isNew) {
+{user.role === 'admin' && (
+                <div className="flex gap-4 flex-shrink-0">
+                  <PrimaryButton onClick={activeTab === 'factories' ? handleAddFactory : activeTab.includes('capa') ? handleAddCapa : handleAddVendor}>
+                    <Plus size={16} className="inline -ml-2 mr-2"/>
+                    {activeTab === 'factories' ? 'New Factory' : activeTab.includes('capa') ? 'New CAPA' : 'New Vendor'}
+                  </PrimaryButton>
+                </div>
+              )}
+          </header>
+
+          {activeTab === 'dashboard' && renderDashboard()}
+          {activeTab === 'transport_sla' && renderSLAInput('Transport')}
+          {activeTab === 'warehouse_sla' && renderSLAInput('Warehouse')}
+{activeTab === 'my_profile' && (() => {
+              const v = vendors.find(v => v.id === user.vendorId);
+              const config = v?.type === 'Transport' ? transportKpiConfig : warehouseKpiConfig;
+              const vendorMonthScores = vendorScoresData.find(s => s.vendorId === v?.id && s.month === vendorEvalMonth);
+              
+              if (user.isNew) {
+                return (
+                  <div className="text-center p-8 animate-fade-in">
+                    <Card className="max-w-lg mx-auto p-10">
+                      <Users className="w-12 h-12 text-dust-taupe mx-auto mb-4" />
+                      <h2 className="text-xl font-bold">Welcome!</h2>
+                      <p className="text-slate-gray mt-2">Your account has been created, but your vendor profile is not yet set up.</p>
+                      <p className="text-slate-gray mt-2">Please contact an administrator to finalize your account and assign you to a specific vendor.</p>
+                    </Card>
+                  </div>
+                );
+              }
+              if (!v) return <div className="text-center p-8">Error: Could not find your vendor profile. Please contact an admin.</div>;
               return (
-                <div className="text-center p-8 animate-fade-in">
-                  <Card className="max-w-lg mx-auto p-10">
-                    <Users className="w-12 h-12 text-dust-taupe mx-auto mb-4" />
-                    <h2 className="text-xl font-bold">Welcome!</h2>
-                    <p className="text-slate-gray mt-2">Your account has been created, but your vendor profile is not yet set up.</p>
-                    <p className="text-slate-gray mt-2">Please contact an administrator to finalize your account and assign you to a specific vendor.</p>
+                <div className="animate-fade-in max-w-4xl mx-auto space-y-6">
+                  <Card className="p-8">
+                      <div className="flex justify-between items-start mb-6">
+                        <div>
+                              <div className="flex items-center gap-4 mb-2">
+                                  <h2 className="text-2xl font-bold m-0 tracking-tight">{v.name}</h2>
+                                  {v.critical && <Badge text="Critical Account" color="orange"/>}
+                              </div>
+                              <Eyebrow>{v.id}</Eyebrow>
+                        </div>
+                        <div className="text-right">
+                            <div className="text-sm text-slate-gray">Current Score</div>
+                            <div className="text-3xl font-bold text-signal-orange">{v.score.toFixed(1)}%</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <label className="text-sm font-bold text-slate-gray uppercase">Evaluation Period</label>
+                        <input 
+                          type="month" 
+                          value={vendorEvalMonth}
+                          onChange={(e) => setVendorEvalMonth(e.target.value)}
+                          className="border border-dust-taupe rounded-pill px-4 py-2 bg-white outline-none focus:border-ink-black"
+                        />
+                      </div>
+                  </Card>
+                  
+                  <Card className="p-8">
+                      <Eyebrow>Criteria Scores</Eyebrow>
+                      <div className="mt-6 overflow-x-auto">
+                        <table className="w-full text-left">
+                          <thead>
+                            <tr className="border-b border-dust-taupe">
+                              <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray">Criteria</th>
+                              <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Weight</th>
+                              <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Target</th>
+                              <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Score</th>
+                              <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Result</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+{config?.map((criteria: any) => {
+                              const savedScore = vendorMonthScores?.scores?.find((s: any) => s.criteriaId === criteria.id);
+                              const criteriaScore = savedScore?.score ?? v?.score ?? 0;
+                              const isPass = criteriaScore >= criteria.target;
+                              
+                              return (
+                              <tr key={criteria.id} className="border-b border-dust-taupe">
+                                <td className="py-4 px-4 font-medium">{criteria.label}</td>
+                                <td className="py-4 px-4 text-center">{criteria.weight}%</td>
+                                <td className="py-4 px-4 text-center">{criteria.target}%</td>
+                                <td className="py-4 px-4 text-center font-bold">
+                                  {criteriaScore.toFixed(1)}
+                                </td>
+                                <td className="py-4 px-4 text-center">
+                                  <Badge 
+                                    text={isPass ? 'Pass' : 'Fail'} 
+                                    color={isPass ? 'gray' : 'orange'} 
+                                  />
+                                </td>
+                              </tr>
+                            );
+                          })}
+                          </tbody>
+                        </table>
+                      </div>
                   </Card>
                 </div>
               );
-            }
-            if (!v) return <div className="text-center p-8">Error: Could not find your vendor profile. Please contact an admin.</div>;
-            return (
-              <div className="animate-fade-in max-w-4xl mx-auto space-y-6">
-                 <Card className="p-8">
-                    <div className="flex justify-between items-start mb-6">
-                       <div>
-                            <div className="flex items-center gap-4 mb-2">
-                                <h2 className="text-2xl font-bold m-0 tracking-tight">{v.name}</h2>
-                                {v.critical && <Badge text="Critical Account" color="orange"/>}
-                            </div>
-                            <Eyebrow>{v.id}</Eyebrow>
-                       </div>
-                       <div className="text-right">
-                           <div className="text-sm text-slate-gray">Current Score</div>
-                           <div className="text-3xl font-bold text-signal-orange">{v.score.toFixed(1)}%</div>
-                       </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <label className="text-sm font-bold text-slate-gray uppercase">Evaluation Period</label>
-                      <input 
-                        type="month" 
-                        value={vendorEvalMonth}
-                        onChange={(e) => setVendorEvalMonth(e.target.value)}
-                        className="border border-dust-taupe rounded-pill px-4 py-2 bg-white outline-none focus:border-ink-black"
-                      />
-                    </div>
-                 </Card>
-                 
-                 <Card className="p-8">
-                    <Eyebrow>Criteria Scores</Eyebrow>
-                    <div className="mt-6 overflow-x-auto">
-                      <table className="w-full text-left">
-                        <thead>
-                          <tr className="border-b border-dust-taupe">
-                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray">Criteria</th>
-                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Weight</th>
-                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Target</th>
-                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Score</th>
-                            <th className="py-3 px-4 text-sm font-bold uppercase text-slate-gray text-center">Result</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-{config?.map((criteria: any) => {
-                            const savedScore = vendorMonthScores?.scores?.find((s: any) => s.criteriaId === criteria.id);
-                            const criteriaScore = savedScore?.score ?? v?.score ?? 0;
-                            const isPass = criteriaScore >= criteria.target;
-                            
-                            return (
-                            <tr key={criteria.id} className="border-b border-dust-taupe">
-                              <td className="py-4 px-4 font-medium">{criteria.label}</td>
-                              <td className="py-4 px-4 text-center">{criteria.weight}%</td>
-                              <td className="py-4 px-4 text-center">{criteria.target}%</td>
-                              <td className="py-4 px-4 text-center font-bold">
-                                {criteriaScore.toFixed(1)}
-                              </td>
-                              <td className="py-4 px-4 text-center">
-                                <Badge 
-                                  text={isPass ? 'Pass' : 'Fail'} 
-                                  color={isPass ? 'gray' : 'orange'} 
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                        </tbody>
-                      </table>
-                    </div>
-                 </Card>
-              </div>
-            );
-        })()}
-        {activeTab === 'my_capa' && renderCapaManagement()}
-        {activeTab === 'vendors' && renderVendorManagement()}
-        {activeTab === 'factories' && renderFactoryManagement()}
-        {activeTab === 'capa' && renderCapaManagement()}
-      </main>
-      <footer className="py-6 border-t border-dust-taupe bg-canvas-cream flex justify-center">
+          })()}
+          {activeTab === 'my_capa' && renderCapaManagement()}
+          {activeTab === 'vendors' && renderVendorManagement()}
+          {activeTab === 'factories' && renderFactoryManagement()}
+          {activeTab === 'capa' && renderCapaManagement()}
+        </main>
+      </div>
+      <footer className="py-4 border-t border-dust-taupe bg-canvas-cream flex justify-center">
         <p className="text-sm text-slate-gray">Powered by Thangcq.NAF © 2026</p>
       </footer>
     </div>
