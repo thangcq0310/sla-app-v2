@@ -229,12 +229,16 @@ const handleLogin = async (e: React.FormEvent) => {
   }, [user, vendors]);
 
   const handleAddVendor = () => {
-     const newId = `VN-${(vendors.length + 1).toString().padStart(3, '0')}`;
-     setVendorFormData({ id: newId, name: '', type: 'Warehouse', factory: 'Long An', contact: '', phone: '', email: '', score: 100, critical: false });
-     setActiveTab('vendors');
-     setSelectedVendor(null);
-     setShowVendorForm(true);
-  };
+      const maxIdNum = vendors.reduce((max, v) => {
+         const match = v.id?.match(/^VN-(\d+)$/);
+         return match ? Math.max(max, parseInt(match[1], 10)) : max;
+      }, 0);
+      const newId = `VN-${(maxIdNum + 1).toString().padStart(3, '0')}`;
+      setVendorFormData({ id: newId, name: '', type: 'Warehouse', factory: 'Long An', contact: '', phone: '', email: '', score: 100, critical: false });
+      setActiveTab('vendors');
+      setSelectedVendor(null);
+      setShowVendorForm(true);
+   };
 
 const handleEditVendor = (vendor: any) => {
       setVendorFormData({ ...vendor });
