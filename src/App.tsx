@@ -458,8 +458,8 @@ const handleEditVendor = (vendor: any) => {
                 <LineChart data={dashboardStats.trendData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#D1CDC7" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#696969', fontSize: 12}} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#696969', fontSize: 12}} domain={[60, 100]} />
-                  <Tooltip cursor={{stroke: '#D1CDC7'}} contentStyle={{ borderRadius: '20px', border: '1px solid #D1CDC7' }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#696969', fontSize: 12}} domain={[60, 100]} tickFormatter={(v) => v.toFixed(0) + '%'} />
+                  <Tooltip cursor={{stroke: '#D1CDC7'}} contentStyle={{ borderRadius: '20px', border: '1px solid #D1CDC7' }} formatter={(v: any) => v.toFixed(2) + '%'} />
                   <Line type="monotone" dataKey="warehouse" name="Warehouse" stroke="#CF4500" strokeWidth={3} dot={{r: 5}} />
                   <Line type="monotone" dataKey="transport" name="Transport" stroke="#F37338" strokeWidth={3} dot={{r: 5}} />
                 </LineChart>
