@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, getDoc, setDoc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 import {
   Truck, Warehouse, Users, Search, Plus, LayoutDashboard, FileText, ChevronLeft, ChevronRight, X, LogOut, CheckCircle, AlertCircle
@@ -337,28 +337,51 @@ const handleEditVendor = (vendor: any) => {
   };
 
   const handleSaveConfig = async () => {
-       if (editingKpiData.reduce((s, i) => s + Number(i.weight), 0) !== 100) {
-            setDialogState({ isOpen: true, title: 'Invalid Weight', message: 'Total weight for all criteria must be exactly 100%.', type: 'error' });
-           return;
-       }
-       if (!editingType) return;
-       const collectionName = editingType === 'Transport' ? 'transportKpi' : 'warehouseKpi';
-       try {
-        for (const kpi of editingKpiData) {
-            const { id, ...kpiData } = kpi;
-            if (id.startsWith('new_')) {
-                await addDoc(collection(db, collectionName), kpiData);
-            } else {
-                await updateDoc(doc(db, collectionName, id), kpiData);
-            }
+    if (editingKpiData.reduce((s, i) => s + Number(i.weight), 0) !== 100) {
+      setDialogState({ isOpen: true, title: 'Invalid Weight', message: 'Total weight for all criteria must be exactly 100%.', type: 'error' });
+      return;
+    }
+    if (!editingType) return;
+    const collectionName = editingType === 'Transport' ? 'transportKpi' : 'warehouseKpi';
+    const originalConfig = editingType === 'Transport' ? transportKpiConfig : warehouseKpiConfig;
+    const editingIds = new Set(editingKpiData.map(k => k.id));
+    const docsToDelete = originalConfig.filter(kpi => !editingIds.has(kpi.id));
+
+    try {
+      // Handle deletions
+      for (const kpi of docsToDelete) {
+        if (!kpi.id.startsWith('new_')) {
+          await deleteDoc(doc(db, collectionName, kpi.id));
         }
-        setIsEditingKpi(false);
-        setDialogState({ isOpen: true, title: 'Success', message: 'KPI configuration has been saved successfully.', type: 'success' });
-       } catch (error) {
-          console.error("Error saving KPI config: ", error);
-          setDialogState({ isOpen: true, title: 'Error', message: 'Failed to save KPI configuration. Please try again.', type: 'error' });
-}
-   };
+      }
+
+      // Handle adds/updates
+      for (const kpi of editingKpiData) {
+        const { id, ...kpiData } = kpi;
+        if (id.startsWith('new_')) {
+          await addDoc(collection(db, collectionName), kpiData);
+        } else {
+          await updateDoc(doc(db, collectionName, id), kpiData);
+        }
+      }
+
+      // Refetch the data to get the new IDs and update state
+      const kpiCollection = collection(db, collectionName);
+      const kpiSnapshot = await getDocs(kpiCollection);
+      const kpiList = kpiSnapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (editingType === 'Transport') {
+        setTransportKpiConfig(kpiList);
+      } else {
+        setWarehouseKpiConfig(kpiList);
+      }
+
+      setIsEditingKpi(false);
+      setDialogState({ isOpen: true, title: 'Success', message: 'KPI configuration has been saved successfully.', type: 'success' });
+    } catch (error) {
+      console.error("Error saving KPI config: ", error);
+      setDialogState({ isOpen: true, title: 'Error', message: 'Failed to save KPI configuration. Please try again.', type: 'error' });
+    }
+  };
 
   const handleSaveDraft = () => {
     setDialogState({ isOpen: true, title: 'Saved', message: 'Draft has been saved.', type: 'success' });
