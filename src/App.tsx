@@ -4,7 +4,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 import {
-  Truck, Warehouse, Users, Search, Plus, LayoutDashboard, FileText, ChevronLeft, ChevronRight, X, MapPin, LogOut, CheckCircle, AlertCircle
+  Truck, Warehouse, Users, Search, Plus, LayoutDashboard, FileText, ChevronLeft, ChevronRight, X, LogOut, CheckCircle, AlertCircle
 } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
