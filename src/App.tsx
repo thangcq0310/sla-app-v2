@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, getDoc, setDoc, deleteDoc, onSnapshot } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 import {
   Truck, Warehouse, Users, Search, Plus, LayoutDashboard, FileText, ChevronLeft, ChevronRight, X, LogOut, CheckCircle, AlertCircle
@@ -103,7 +103,8 @@ export default function App() {
   const [evaluationMonth, setEvaluationMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [vendorEvalMonth, setVendorEvalMonth] = useState(() => new Date().toISOString().slice(0, 7));
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submittedMonths, setSubmittedMonths] = useState<string[]>([]);
+  const [isDraft, setIsDraft] = useState(false);
+  const [submittedMonths, setSubmittedMonths] = useState<string[]>([]); // doc IDs of fully submitted scores
   const [vendorScoresData, setVendorScoresData] = useState<any[]>([]);
   const [evaluationScores, setEvaluationScores] = useState<any[]>([]);
   const [vendorSearch, setVendorSearch] = useState('');
@@ -125,36 +126,32 @@ export default function App() {
   const [accountFormData, setAccountFormData] = useState({ email: '', password: '' });
 
   useEffect(() => {
-    const fetchFirestoreData = async () => {
-      const vendorsCollection = collection(db, "vendors");
-      const vendorsSnapshot = await getDocs(vendorsCollection);
-      const vendorsList = vendorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // Realtime listeners — tự động cập nhật khi data thay đổi trên Firestore
+    const unsubVendors = onSnapshot(collection(db, "vendors"), (snapshot) => {
+      const vendorsList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       setVendors(vendorsList);
+    });
 
-      const capasCollection = collection(db, "capas");
-      const capasSnapshot = await getDocs(capasCollection);
-      const caspasList = capasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setCapas(caspasList);
+    const unsubCapas = onSnapshot(collection(db, "capas"), (snapshot) => {
+      const capasList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      setCapas(capasList);
+    });
 
-      const transportKpiCollection = collection(db, "transportKpi");
-      const transportKpiSnapshot = await getDocs(transportKpiCollection);
-      const transportKpiList = transportKpiSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setTransportKpiConfig(transportKpiList);
+    const unsubTransportKpi = onSnapshot(collection(db, "transportKpi"), (snapshot) => {
+      const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      setTransportKpiConfig(list);
+    });
 
-      const warehouseKpiCollection = collection(db, "warehouseKpi");
-      const warehouseKpiSnapshot = await getDocs(warehouseKpiCollection);
-      const warehouseKpiList = warehouseKpiSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setWarehouseKpiConfig(warehouseKpiList);
+    const unsubWarehouseKpi = onSnapshot(collection(db, "warehouseKpi"), (snapshot) => {
+      const list = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      setWarehouseKpiConfig(list);
+    });
 
-      // Load submitted months for vendors
-      const scoresCollection = collection(db, "vendorScores");
-      const scoresSnapshot = await getDocs(scoresCollection);
-      const allScores = scoresSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setSubmittedMonths(allScores.map((s: any) => s.id)); // Store doc IDs: "vendorId_month"
+    const unsubScores = onSnapshot(collection(db, "vendorScores"), (snapshot) => {
+      const allScores = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      setSubmittedMonths(allScores.filter((s: any) => s.status === 'submitted').map((s: any) => s.id));
       setVendorScoresData(allScores);
-    };
-
-    fetchFirestoreData();
+    });
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
@@ -171,7 +168,14 @@ export default function App() {
       setIsLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubVendors();
+      unsubCapas();
+      unsubTransportKpi();
+      unsubWarehouseKpi();
+      unsubScores();
+      unsubscribe();
+    };
   }, []);
 
 const handleLogin = async (e: React.FormEvent) => {
@@ -383,8 +387,49 @@ const handleEditVendor = (vendor: any) => {
     }
   };
 
-  const handleSaveDraft = () => {
-    setDialogState({ isOpen: true, title: 'Saved', message: 'Draft has been saved.', type: 'success' });
+  const handleSaveDraft = async () => {
+    if (!selectedVendor || !evaluationMonth) {
+      setDialogState({ isOpen: true, title: 'Error', message: 'Please select a vendor and evaluation period.', type: 'error' });
+      return;
+    }
+    try {
+      const monthDocId = `${selectedVendor.id}_${evaluationMonth}`;
+      const config = selectedVendor.type === 'Transport' ? transportKpiConfig : warehouseKpiConfig;
+      const scoresData = config?.map((kpi: any, idx: number) => ({
+        criteriaId: kpi.id,
+        criteriaLabel: kpi.label,
+        weight: kpi.weight,
+        target: kpi.target,
+        score: evaluationScores[idx]?.score ?? 100
+      })) || [];
+
+      const totalScore = scoresData.reduce((sum: number, s: any) => sum + (s.score * s.weight / 100), 0);
+
+      await setDoc(doc(db, "vendorScores", monthDocId), {
+        vendorId: selectedVendor.id,
+        vendorName: selectedVendor.name,
+        month: evaluationMonth,
+        type: selectedVendor.type,
+        scores: scoresData,
+        totalScore,
+        status: 'draft',
+        updatedAt: new Date().toISOString()
+      });
+
+      // Update local vendorScoresData
+      const existing = vendorScoresData.find(s => s.id === monthDocId);
+      const newEntry = { id: monthDocId, vendorId: selectedVendor.id, vendorName: selectedVendor.name, month: evaluationMonth, type: selectedVendor.type, scores: scoresData, totalScore, status: 'draft' };
+      if (existing) {
+        setVendorScoresData(vendorScoresData.map(s => s.id === monthDocId ? newEntry : s));
+      } else {
+        setVendorScoresData([...vendorScoresData, newEntry]);
+      }
+
+      setIsDraft(true);
+      setDialogState({ isOpen: true, title: 'Draft Saved', message: `Draft saved for ${selectedVendor.name} - ${evaluationMonth}. You can continue editing.`, type: 'success' });
+    } catch (error: any) {
+      setDialogState({ isOpen: true, title: 'Error', message: error.message || 'Failed to save draft.', type: 'error' });
+    }
   };
 
   const handleSubmitScore = async () => {
@@ -414,7 +459,8 @@ const handleEditVendor = (vendor: any) => {
         type: selectedVendor.type,
         scores: scoresData,
         totalScore,
-        createdAt: new Date().toISOString()
+        status: 'submitted',
+        submittedAt: new Date().toISOString()
       });
 
       // Update vendor's current score in Firestore
@@ -422,9 +468,18 @@ const handleEditVendor = (vendor: any) => {
 
       // Update local state
       setSubmittedMonths([...submittedMonths, monthDocId]);
-      setVendorScoresData([...vendorScoresData, { id: monthDocId, vendorId: selectedVendor.id, vendorName: selectedVendor.name, month: evaluationMonth, type: selectedVendor.type, scores: scoresData, totalScore }]);
+      const newEntry = { id: monthDocId, vendorId: selectedVendor.id, vendorName: selectedVendor.name, month: evaluationMonth, type: selectedVendor.type, scores: scoresData, totalScore, status: 'submitted' };
+      const existingIdx = vendorScoresData.findIndex(s => s.id === monthDocId);
+      if (existingIdx >= 0) {
+        const updated = [...vendorScoresData];
+        updated[existingIdx] = newEntry;
+        setVendorScoresData(updated);
+      } else {
+        setVendorScoresData([...vendorScoresData, newEntry]);
+      }
       setVendors(vendors.map(v => v.id === selectedVendor.id ? { ...v, score: totalScore } : v));
 
+      setIsDraft(false);
       setIsSubmitted(true);
       setDialogState({ isOpen: true, title: 'Success', message: `Score for ${selectedVendor.name} in ${evaluationMonth} has been submitted successfully.`, type: 'success' });
     } catch (error: any) {
@@ -651,14 +706,18 @@ const handleEditVendor = (vendor: any) => {
                         setSelectedVendor(vendor || null);
                         if (vendor) {
                           const docId = `${vendor.id}_${evaluationMonth}`;
-                          setIsSubmitted(submittedMonths.includes(docId));
-                          // Load existing scores if already submitted
                           const existing = vendorScoresData.find(s => s.id === docId);
+                          setIsSubmitted(existing?.status === 'submitted');
+                          setIsDraft(existing?.status === 'draft');
                           if (existing?.scores) {
                             setEvaluationScores(existing.scores.map((s: any) => ({ criteriaId: s.criteriaId, score: s.score, weight: s.weight })));
                           } else {
                             setEvaluationScores([]);
                           }
+                        } else {
+                          setIsSubmitted(false);
+                          setIsDraft(false);
+                          setEvaluationScores([]);
                         }
                       }}
                     >
@@ -676,9 +735,9 @@ const handleEditVendor = (vendor: any) => {
                           setEvaluationMonth(newMonth);
                           if (selectedVendor) {
                             const docId = `${selectedVendor.id}_${newMonth}`;
-                            setIsSubmitted(submittedMonths.includes(docId));
-                            // Load existing scores if already submitted
                             const existing = vendorScoresData.find(s => s.id === docId);
+                            setIsSubmitted(existing?.status === 'submitted');
+                            setIsDraft(existing?.status === 'draft');
                             if (existing?.scores) {
                               setEvaluationScores(existing.scores.map((s: any) => ({ criteriaId: s.criteriaId, score: s.score, weight: s.weight })));
                             } else {
@@ -739,7 +798,11 @@ const handleEditVendor = (vendor: any) => {
             </div>
            {/* Final Weighted Score */}
            <div className="mt-6 pt-6 border-t border-dust-taupe flex justify-between items-center">
-             <div className="text-base font-bold text-slate-gray uppercase">Final Weighted Score</div>
+             <div className="flex items-center gap-3">
+               <div className="text-base font-bold text-slate-gray uppercase">Final Weighted Score</div>
+               {isDraft && !isSubmitted && <span className="px-3 py-1 text-xs font-bold rounded-pill border border-mastercard-yellow text-mastercard-yellow">Draft Saved</span>}
+               {isSubmitted && <span className="px-3 py-1 text-xs font-bold rounded-pill border border-green-500 text-green-600">Submitted</span>}
+             </div>
              <div className="text-2xl font-bold text-signal-orange">
                {(() => {
                  const total = config?.reduce((sum: number, kpi: any, idx: number) => {
@@ -753,9 +816,11 @@ const handleEditVendor = (vendor: any) => {
         </Card>
 <div className="mt-8 pt-8 border-t border-dust-taupe flex justify-end gap-4">
               <SecondaryButton onClick={() => window.print()}>Print / Save as PDF</SecondaryButton>
-              <SecondaryButton onClick={handleSaveDraft} disabled={isSubmitted}>Save Draft</SecondaryButton>
-              <PrimaryButton onClick={handleSubmitScore} disabled={isSubmitted}>
-                {isSubmitted ? 'Submitted' : 'Submit Score'}
+              <SecondaryButton onClick={handleSaveDraft} disabled={isSubmitted || !selectedVendor}>
+                {isDraft && !isSubmitted ? 'Update Draft' : 'Save Draft'}
+              </SecondaryButton>
+              <PrimaryButton onClick={handleSubmitScore} disabled={isSubmitted || !selectedVendor}>
+                {isSubmitted ? '✓ Submitted' : 'Submit Score'}
               </PrimaryButton>
          </div>
       </div>
