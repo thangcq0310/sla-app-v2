@@ -150,7 +150,7 @@ export default function App() {
       const scoresCollection = collection(db, "vendorScores");
       const scoresSnapshot = await getDocs(scoresCollection);
       const allScores = scoresSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setSubmittedMonths([...new Set(allScores.map((s: any) => s.month))]);
+      setSubmittedMonths(allScores.map((s: any) => s.id)); // Store doc IDs: "vendorId_month"
       setVendorScoresData(allScores);
     };
 
@@ -389,21 +389,23 @@ const handleEditVendor = (vendor: any) => {
 
   const handleSubmitScore = async () => {
     if (!selectedVendor || !evaluationMonth) return;
-    if (submittedMonths.includes(evaluationMonth)) {
-      setDialogState({ isOpen: true, title: 'Already Submitted', message: `Score for ${evaluationMonth} has already been submitted.`, type: 'error' });
+    const monthDocId = `${selectedVendor.id}_${evaluationMonth}`;
+    if (submittedMonths.includes(monthDocId)) {
+      setDialogState({ isOpen: true, title: 'Already Submitted', message: `Score for ${selectedVendor.name} in ${evaluationMonth} has already been submitted.`, type: 'error' });
       return;
     }
     try {
-      // Save scores for this month
-      const monthDocId = `${selectedVendor.id}_${evaluationMonth}`;
       const config = selectedVendor.type === 'Transport' ? transportKpiConfig : warehouseKpiConfig;
-      const scoresData = config?.map((kpi: any) => ({
+      const scoresData = config?.map((kpi: any, idx: number) => ({
         criteriaId: kpi.id,
         criteriaLabel: kpi.label,
         weight: kpi.weight,
         target: kpi.target,
-        score: 100
+        score: evaluationScores[idx]?.score ?? 100  // use actual entered score
       })) || [];
+
+      // Calculate weighted total score
+      const totalScore = scoresData.reduce((sum: number, s: any) => sum + (s.score * s.weight / 100), 0);
 
       await setDoc(doc(db, "vendorScores", monthDocId), {
         vendorId: selectedVendor.id,
@@ -411,13 +413,20 @@ const handleEditVendor = (vendor: any) => {
         month: evaluationMonth,
         type: selectedVendor.type,
         scores: scoresData,
+        totalScore,
         createdAt: new Date().toISOString()
       });
 
-      setSubmittedMonths([...submittedMonths, evaluationMonth]);
+      // Update vendor's current score in Firestore
+      await updateDoc(doc(db, "vendors", selectedVendor.id), { score: totalScore });
+
+      // Update local state
+      setSubmittedMonths([...submittedMonths, monthDocId]);
+      setVendorScoresData([...vendorScoresData, { id: monthDocId, vendorId: selectedVendor.id, vendorName: selectedVendor.name, month: evaluationMonth, type: selectedVendor.type, scores: scoresData, totalScore }]);
+      setVendors(vendors.map(v => v.id === selectedVendor.id ? { ...v, score: totalScore } : v));
 
       setIsSubmitted(true);
-      setDialogState({ isOpen: true, title: 'Success', message: `Score for ${evaluationMonth} has been submitted successfully.`, type: 'success' });
+      setDialogState({ isOpen: true, title: 'Success', message: `Score for ${selectedVendor.name} in ${evaluationMonth} has been submitted successfully.`, type: 'success' });
     } catch (error: any) {
       setDialogState({ isOpen: true, title: 'Error', message: error.message || 'Failed to submit score.', type: 'error' });
     }
@@ -634,8 +643,27 @@ const handleEditVendor = (vendor: any) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-dust-taupe">
                 <div>
                     <label className="block text-xs font-bold text-slate-gray uppercase mb-2 ml-4">Select Vendor</label>
-                    <select className="w-full border border-dust-taupe rounded-pill px-5 py-3 text-base outline-none focus:border-ink-black transition-colors bg-white appearance-none">
-                        {vendors.filter(v => v.type === type).map(v => <option key={v.id}>{v.name}</option>)}
+                    <select
+                      className="w-full border border-dust-taupe rounded-pill px-5 py-3 text-base outline-none focus:border-ink-black transition-colors bg-white appearance-none"
+                      value={selectedVendor?.name || ''}
+                      onChange={(e) => {
+                        const vendor = vendors.find(v => v.name === e.target.value);
+                        setSelectedVendor(vendor || null);
+                        if (vendor) {
+                          const docId = `${vendor.id}_${evaluationMonth}`;
+                          setIsSubmitted(submittedMonths.includes(docId));
+                          // Load existing scores if already submitted
+                          const existing = vendorScoresData.find(s => s.id === docId);
+                          if (existing?.scores) {
+                            setEvaluationScores(existing.scores.map((s: any) => ({ criteriaId: s.criteriaId, score: s.score, weight: s.weight })));
+                          } else {
+                            setEvaluationScores([]);
+                          }
+                        }
+                      }}
+                    >
+                      <option value="">Select a vendor</option>
+                      {vendors.filter(v => v.type === type).map(v => <option key={v.id} value={v.name}>{v.name}</option>)}
                     </select>
                 </div>
                 <div>
@@ -644,8 +672,19 @@ const handleEditVendor = (vendor: any) => {
                         type="month"
                         value={evaluationMonth}
                         onChange={(e) => {
-                          setEvaluationMonth(e.target.value);
-                          setIsSubmitted(submittedMonths.includes(e.target.value));
+                          const newMonth = e.target.value;
+                          setEvaluationMonth(newMonth);
+                          if (selectedVendor) {
+                            const docId = `${selectedVendor.id}_${newMonth}`;
+                            setIsSubmitted(submittedMonths.includes(docId));
+                            // Load existing scores if already submitted
+                            const existing = vendorScoresData.find(s => s.id === docId);
+                            if (existing?.scores) {
+                              setEvaluationScores(existing.scores.map((s: any) => ({ criteriaId: s.criteriaId, score: s.score, weight: s.weight })));
+                            } else {
+                              setEvaluationScores([]);
+                            }
+                          }
                         }}
                         className="w-full border border-dust-taupe rounded-pill px-5 py-3 text-base outline-none focus:border-ink-black transition-colors bg-white"
                       />
@@ -667,7 +706,7 @@ const handleEditVendor = (vendor: any) => {
                     </thead>
                     <tbody>
                         {config.map((kpi, idx) => {
-                            const scoreValue = 100;
+                            const currentScore = evaluationScores[idx]?.score ?? 100;
                             return (
                                 <tr key={kpi.id} className="border-b border-dust-taupe">
                                     <td className="py-4 px-4 font-medium">{kpi.label}</td>
@@ -678,13 +717,16 @@ const handleEditVendor = (vendor: any) => {
                                         <div className="relative inline-block">
                                             <input
                                                 type="number"
-                                                defaultValue={scoreValue}
+                                                min={0}
+                                                max={100}
+                                                value={currentScore}
+                                                disabled={isSubmitted}
                                                 onChange={(e) => {
                                                     const newScores = [...evaluationScores];
                                                     newScores[idx] = { criteriaId: kpi.id, score: Number(e.target.value), weight: kpi.weight };
                                                     setEvaluationScores(newScores);
                                                 }}
-                                                className="w-28 px-4 py-2 border bg-white border-dust-taupe rounded-pill text-center text-lg font-bold outline-none"
+                                                className="w-28 px-4 py-2 border bg-white border-dust-taupe rounded-pill text-center text-lg font-bold outline-none disabled:opacity-60 disabled:cursor-not-allowed"
                                             />
                                             <span className="absolute right-5 top-1/2 -translate-y-1/2 text-sm text-slate-gray">%</span>
                                         </div>
